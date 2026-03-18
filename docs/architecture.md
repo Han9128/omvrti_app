@@ -49,10 +49,14 @@ To better understand how the application will be structured, the following illus
 
 The application will be divided into three primary components:
 
-View (UI Layer)
-↓
-ViewModel (Logic Layer)
-↓
+View (UI Layer)  
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓  
+
+ViewModel (Logic Layer)  
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓  
+
 Model (Data Layer)
 
 #### View (Presentation Layer)
