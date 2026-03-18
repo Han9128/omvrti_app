@@ -27,15 +27,14 @@ In modern application development, one of the most widely used approaches is **C
 
 ### Clean Architecture Overview
 
-Clean Architecture organizes the application into three main layers:
- like an onion:
-┌─────────────────────────────────┐
-│        Presentation Layer       │  ← Screens, Widgets, UI
-├─────────────────────────────────┤
-│          Domain Layer           │  ← Business Logic, Rules
-├─────────────────────────────────┤
-│           Data Layer            │  ← APIs, Database, Local Storage
-└─────────────────────────────────┘
+Clean Architecture organizes the application into three main layers, like an onion:
+
+| Layer          | Description              |
+|---------------|--------------------------|
+| Presentation  | UI, Screens, Widgets     |
+| Domain        | Business Logic, Rules          |
+| Data          | APIs, Database , Local Storage         |
+
 The rule is: inner layers never know about outer layers. Your business logic should not care if data comes from an API or a local database. This makes testing and swapping things out easy. But, for now we will follow a MVVM (Model-View-ViewModel) architecture as clean architecture is too advanced and would become too complex at this moment so for simplicity and easiness MVVM will be followed and then later as the application grows in complexity, we can progressively transition to Clean Architecture by:
 
 - Introducing a **Domain layer** (Use Cases, Entities)  
@@ -55,9 +54,6 @@ View (UI Layer)
 ViewModel (Logic Layer)
 ↓
 Model (Data Layer)
-
-
----
 
 #### 2.2.1. View (Presentation Layer)
 
