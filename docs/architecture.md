@@ -25,7 +25,7 @@ To ensure long-term scalability, we focus on three core pillars:
 
 In modern application development, one of the most widely used approaches is **Clean Architecture combined with a Feature-First folder structure**.
 
-### Clean Architecture Overview
+### 2.1 Clean Architecture Overview
 
 Clean Architecture organizes the application into three main layers, like an onion:
 
@@ -41,11 +41,11 @@ The rule is: inner layers never know about outer layers. Your business logic sho
 - Adding a **Repository layer** for better data abstraction  
 - Decoupling data sources (API, local storage) from business logic  
 
-### 2.1 MVVM Architecture Overview (Application Perspective)
+### 2.2 MVVM Architecture Overview (Application Perspective)
 
 To better understand how the application will be structured, the following illustrates how the **MVVM (Model-View-ViewModel)** architecture will be applied in the OmVrti.ai mobile app.
 
-### 2.2 MVVM Layers
+#### MVVM Layers
 
 The application will be divided into three primary components:
 
@@ -55,7 +55,7 @@ ViewModel (Logic Layer)
 ↓
 Model (Data Layer)
 
-#### 2.2.1. View (Presentation Layer)
+#### View (Presentation Layer)
 
 This layer is responsible for:
 - Rendering UI (Screens & Widgets)
@@ -74,7 +74,7 @@ This layer is responsible for:
 > Note: No business logic should be written in this layer.
 
 
-#### 2.2.2 ViewModel (Business Logic Layer)
+#### ViewModel (Business Logic Layer)
 
 This layer acts as a bridge between the UI and data.
 
@@ -89,7 +89,7 @@ This layer acts as a bridge between the UI and data.
 - Calculate savings and budget usage  
 - Handle booking selection logic  
 
-#### 2.2.3 Model (Data Layer)
+#### Model (Data Layer)
 
 This layer represents the data structures used in the application.
 
