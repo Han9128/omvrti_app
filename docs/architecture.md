@@ -110,3 +110,48 @@ This layer represents the data structures used in the application.
 
 ---
 
+## 3. Folder Structure (AutoPilot – MVVM)
+
+```
+lib/
+├── core/
+│   ├── constants/
+│   ├── theme/
+│   ├── utils/
+│
+├── features/
+│
+│   ├── autopilot/
+│   │
+│   │   ├── view/                    ← UI Layer
+│   │   │   ├── screens/
+│   │   │   │   ├── autopilot_alert_screen.dart
+│   │   │   │   ├── autopilot_booking_screen.dart
+│   │   │   │   ├── autopilot_summary_screen.dart
+│   │   │   │
+│   │   │   ├── widgets/
+│   │   │       ├── flight_card.dart
+│   │   │       ├── hotel_card.dart
+│   │   │       ├── car_card.dart
+│   │   │       ├── savings_card.dart
+│   │
+│   │   ├── viewmodel/               ← Logic Layer
+│   │   │   ├── autopilot_viewmodel.dart
+│   │
+│   │   ├── model/                   ← Data Layer
+│   │   │   ├── trip_model.dart
+│   │   │   ├── flight_model.dart
+│   │   │   ├── hotel_model.dart
+│   │   │   ├── car_model.dart
+│   │
+│   │   ├── service/                 ← API / Data fetching 
+│   │       ├── autopilot_service.dart
+│
+│
+│   ├── dashboard/
+│   ├── trip/
+│   ├── booking/
+│   ├── profile/
+
+```
+
