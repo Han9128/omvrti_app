@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class AppIcons {
   AppIcons._();
@@ -9,7 +10,9 @@ class AppIcons {
   static const IconData close = Icons.close;
 
   // ── AutoPilot ─────────────────────────────────────────────
-  static const IconData autoPilot = Icons.smart_toy_outlined;
+  static const dollar = 'assets/icons/dollar.svg';
+  static const String profileIcon = 'assets/icons/profile_icon.svg';
+  static const IconData forward = Icons.chevron_right;
   static const IconData flight = Icons.flight_takeoff;
   static const IconData hotel = Icons.hotel_outlined;
   static const IconData car = Icons.directions_car_outlined;
