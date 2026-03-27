@@ -6,7 +6,7 @@ class AppIcons {
 
   // ── Navigation ────────────────────────────────────────────
   static const IconData menu = Icons.menu;
-  static const IconData back = Icons.arrow_back_ios;
+  static const IconData back = Icons.chevron_left;
   static const IconData close = Icons.close;
 
   // ── AutoPilot ─────────────────────────────────────────────

@@ -9,13 +9,11 @@ class AutopilotFlightScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
+      appBar: const OmvrtiAppBar(showBack: true),
       backgroundColor: AppColors.pageBackground,
       body: SafeArea(
         child: Column(
-          children: [
-            const OmvrtiAppBar(showBack: true),
-            Expanded(child: Text("Fligt Screen - Coming Soon...")),
-          ],
+          children: [Expanded(child: Text("Fligt Screen - Coming Soon..."))],
         ),
       ),
     );

@@ -33,11 +33,12 @@ class AutopilotAlertScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.pageBackground,
+      appBar: const OmvrtiAppBar(),
       // safearea gives auto padding to prevent any overflow and items get cut
       body: SafeArea(
         child: Column(
           children: [
-            OmvrtiAppBar(),
+            // OmvrtiAppBar(),
             // expanded makes this to take reamining space perfectly without overflowing
             Expanded(
               // handle three states of data getting from view_model file

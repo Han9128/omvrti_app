@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:omvrti_app/core/constants/constants.dart';
 
-class OmvrtiAppBar extends StatelessWidget {
+class OmvrtiAppBar extends StatelessWidget implements PreferredSizeWidget {
+  @override
+  Size get preferredSize => const Size.fromHeight(80);
+
   // showBack controls which icon appears on the left
   // false (default) → hamburger menu ☰
   // true            → back arrow ←
+
   final bool showBack;
 
   // onBackPressed lets the caller define what happens when back is tapped
@@ -22,27 +26,35 @@ class OmvrtiAppBar extends StatelessWidget {
   // build() defines the UI of the widget
   // It can run multiple times, so avoid heavy logic here
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.md,
-      ),
-
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // this is either menu icon or back icon depending on screen
-          _buildLeftIcon(context),
-
-          // omvrti.ai logo text
-          _buildLogo(),
-
-          // the profile picture
-          const CircleAvatar(
-            radius: 20,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=12'),
+    return Container(
+      color: AppColors.surface,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.md,
           ),
-        ],
+
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // this is either menu icon or back icon depending on screen
+              _buildLeftIcon(context),
+
+              // omvrti.ai logo text
+              _buildLogo(),
+
+              // the profile picture
+              const CircleAvatar(
+                radius: 20,
+                backgroundImage: NetworkImage(
+                  'https://i.pravatar.cc/150?img=12',
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -71,7 +83,9 @@ class OmvrtiAppBar extends StatelessWidget {
             shape: BoxShape.circle,
           ),
 
-          child: Icon(AppIcons.back, color: AppColors.textPrimary, size: 20),
+          child: Center(
+            child: Icon(AppIcons.back, color: AppColors.textPrimary, size: 24),
+          ),
         ),
       );
     }
