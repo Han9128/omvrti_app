@@ -155,3 +155,32 @@ lib/
 
 ```
 
+## 4. State Management
+ 
+**Chosen Solution:** Riverpod 2.x
+ 
+Riverpod is a reactive state management library for Flutter. It provides a centralized way to manage and share data across screens without passing values manually through widget layers.
+ 
+**Why Riverpod over alternatives:**
+ 
+| Option | Reason Rejected |
+|---|---|
+| setState | Cannot share state across screens |
+| Provider | Outdated — Riverpod was built to replace it |
+| GetX | Poor testability, not production-grade |
+| Bloc | Too much boilerplate for current team size |
+ 
+**Provider Types Used:**
+ 
+| Type | Used For |
+|---|---|
+| `Provider` | Service instances, dependencies |
+| `FutureProvider` | Fetching and displaying data (read-only screens) |
+| `StateNotifierProvider` | Screens with user interactions and state changes |
+ 
+**Widget Types:**
+ 
+- `ConsumerWidget` — default choice, used when screen only displays data
+- `ConsumerStatefulWidget` — used only when lifecycle methods are needed
+ 
+**Upgrade Path:** If the team scales or compliance requires full event logging, Bloc can be adopted per feature without touching the service or model layers.
