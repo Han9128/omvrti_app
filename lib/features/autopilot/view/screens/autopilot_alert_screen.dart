@@ -31,13 +31,13 @@ class AutopilotAlertScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<TripModel> tripAsync = ref.watch(tripProvider);
 
-    return Scaffold(
-      backgroundColor: AppColors.pageBackground,
-      appBar: const OmvrtiAppBar(),
+    return ColoredBox(
+      color: AppColors.pageBackground,
       // safearea gives auto padding to prevent any overflow and items get cut
-      body: SafeArea(
+      child: SafeArea(
         child: Column(
           children: [
+            const OmvrtiAppBar(),
             // OmvrtiAppBar(),
             // expanded makes this to take reamining space perfectly without overflowing
             Expanded(

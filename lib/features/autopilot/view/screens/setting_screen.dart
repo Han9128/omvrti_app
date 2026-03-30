@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:omvrti_app/core/constants/app_colors.dart';
 import 'package:omvrti_app/core/widgets/omvrti_app_bar.dart';
+import '../../../../core/constants/constants.dart';
 
-class AutopilotFlightScreen extends ConsumerWidget {
-  const AutopilotFlightScreen({super.key});
+class SettingScreen extends ConsumerWidget {
+  const SettingScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ColoredBox(
       color: AppColors.pageBackground,
       child: SafeArea(
+        bottom: false,
         child: Column(
           children: [
-            const OmvrtiAppBar(showBack: true),
-            Center(
-              child: Expanded(child: Text("Fligt Screen - Coming Soon...")),
+            const OmvrtiAppBar(),
+            const Expanded(
+              child: Center(child: Text('Settings — Coming Soon')),
             ),
           ],
         ),

@@ -7,8 +7,12 @@
 // each page has its own URL.
 
 import 'package:go_router/go_router.dart';
+import 'package:omvrti_app/core/widgets/main_shell.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/autopilot_alert_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/autopilot_flight_screen.dart';
+import 'package:omvrti_app/features/autopilot/view/screens/notification_screen.dart';
+import 'package:omvrti_app/features/autopilot/view/screens/setting_screen.dart';
+import 'package:omvrti_app/features/autopilot/view/screens/trip_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -23,21 +27,42 @@ class AppRouter {
     initialLocation: '/autopilot/alert',
 
     routes: [
-      GoRoute(
-        path: '/autopilot/alert',
-        // name is optional but useful — lets you navigate by name
-        // instead of hardcoding path strings everywhere
-        name: 'autopilot-alert',
+      ShellRoute(
+        builder: (context, state, child) => MainShell(child: child),
+        routes: [
+          GoRoute(
+            path: '/autopilot/alert',
+            // name is optional but useful — lets you navigate by name
+            // instead of hardcoding path strings everywhere
+            name: 'autopilot-alert',
 
-        // builder returns the widget to show for this route
-        // state contains route parameters if any (we will use this later)
-        builder: (context, state) => const AutopilotAlertScreen(),
-      ),
+            // builder returns the widget to show for this route
+            // state contains route parameters if any (we will use this later)
+            builder: (context, state) => const AutopilotAlertScreen(),
+          ),
 
-      GoRoute(
-        path: '/autopilot/flight',
-        name: 'autopilot-flight',
-        builder: (context, state) => const AutopilotFlightScreen(),
+          GoRoute(
+            path: '/autopilot/flight',
+            name: 'autopilot-flight',
+            builder: (context, state) => const AutopilotFlightScreen(),
+          ),
+
+          GoRoute(
+            path: '/trips',
+            name: 'trips',
+            builder: (context, state) => const TripScreen(),
+          ),
+          GoRoute(
+            path: '/notifications',
+            name: 'notifications',
+            builder: (context, state) => const NotificationsScreen(),
+          ),
+          GoRoute(
+            path: '/settings',
+            name: 'settings',
+            builder: (context, state) => const SettingScreen(),
+          ),
+        ],
       ),
     ],
   );

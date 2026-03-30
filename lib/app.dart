@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:omvrti_app/core/router/app_router.dart';
 import 'package:omvrti_app/core/theme/app_theme.dart';
+import 'package:flutter/services.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/autopilot_alert_screen.dart';
 
 class OmVrtiApp extends StatelessWidget {
@@ -8,6 +9,14 @@ class OmVrtiApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.white,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+      ),
+    );
+
     return MaterialApp.router(
       title: 'OmVrti.ai',
       // this removes the default debug modes shown on emulator when we run

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:omvrti_app/core/constants/app_colors.dart';
 import 'package:omvrti_app/core/constants/app_text_styles.dart';
 import 'package:omvrti_app/core/constants/font_families.dart';
@@ -72,7 +73,8 @@ class AppTheme {
       dividerTheme: const DividerThemeData(
         color: AppColors.textMuted,
         thickness: 1,
-        space: 24, // this is the total space taken by divider i.e top space + thickness + downspace
+        space:
+            24, // this is the total space taken by divider i.e top space + thickness + downspace
       ),
 
       textTheme: TextTheme(

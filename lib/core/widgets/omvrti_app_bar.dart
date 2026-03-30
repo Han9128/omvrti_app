@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:omvrti_app/core/constants/constants.dart';
 
-class OmvrtiAppBar extends StatelessWidget implements PreferredSizeWidget {
+class OmvrtiAppBar extends StatelessWidget {
   @override
-  Size get preferredSize => const Size.fromHeight(80);
-
+  // Size get preferredSize => const Size.fromHeight(80);
   // showBack controls which icon appears on the left
   // false (default) → hamburger menu ☰
   // true            → back arrow ←
-
   final bool showBack;
 
   // onBackPressed lets the caller define what happens when back is tapped
