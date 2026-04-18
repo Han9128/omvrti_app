@@ -13,6 +13,7 @@ import 'package:omvrti_app/features/autopilot/view/screens/autopilot_flight_scre
 import 'package:omvrti_app/features/autopilot/view/screens/notification_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/setting_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/trip_screen.dart';
+import 'package:omvrti_app/features/auth/view/screens/login_screen.dart ';
 
 class AppRouter {
   AppRouter._();
@@ -24,9 +25,10 @@ class AppRouter {
   static final GoRouter router = GoRouter(
     // initialLocation is the first screen shown when app launches
     // Like a website's homepage
-    initialLocation: '/autopilot/alert',
+    initialLocation: '/login',
 
     routes: [
+      GoRoute(path: '/login', builder: (context,state) => const LoginScreen()),
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
         routes: [
