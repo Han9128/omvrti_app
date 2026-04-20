@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:omvrti_app/core/router/app_router.dart';
 import 'package:omvrti_app/core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
-import 'package:omvrti_app/features/autopilot/view/screens/autopilot_alert_screen.dart';
 
 class OmVrtiApp extends StatelessWidget {
   const OmVrtiApp({super.key});

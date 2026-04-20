@@ -25,11 +25,17 @@ class OmvrtiAppBar extends StatelessWidget {
   // build() defines the UI of the widget
   // It can run multiple times, so avoid heavy logic here
   Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.surface,
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.white,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+      ),
+      child: Container(
+        color: AppColors.surface,
+        child: SafeArea(
+          bottom: false,
+          child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.lg,
             vertical: AppSpacing.md,
@@ -55,6 +61,7 @@ class OmvrtiAppBar extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 

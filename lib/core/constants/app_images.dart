@@ -10,4 +10,5 @@ class AppImages {
   static const String bugetDollar = 'assets/images/buget_dollar.png';
   static const String flightReturn = 'assets/images/flight_return.png';
   static const String login_trip_image = 'assets/images/login_trip_image.jpg';
+  static const String login_cloud_image = 'assets/images/login_clouds.jpg';
 }

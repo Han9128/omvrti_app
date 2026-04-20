@@ -75,7 +75,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // context.go() replaces the entire navigation stack with /home.
       // This means the user CANNOT press back to return to the login screen.
       // That's the correct behavior — you don't go "back" after logging in.
-      context.go('/autopilot/alert'); // TODO: change to '/home' when Home screen is built
+      context.go('/home'); // TODO: change to '/home' when Home screen is built
     }
   }
 

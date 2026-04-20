@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../constants/constants.dart';
 
@@ -8,10 +9,17 @@ class MainShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.surface,
-      body: child,
-      bottomNavigationBar: _buildBottomNav(context),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.white,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        backgroundColor: AppColors.surface,
+        body: child,
+        bottomNavigationBar: _buildBottomNav(context),
+      ),
     );
   }
 
@@ -36,7 +44,7 @@ class MainShell extends StatelessWidget {
                 icon: Icons.home_outlined,
                 activeIcon: Icons.home_rounded,
                 label: 'Home',
-                path: '/autopilot/alert',
+                path: '/home',
                 currentIndex: currentIndex,
               ),
               _buildNavItem(
@@ -115,7 +123,7 @@ class MainShell extends StatelessWidget {
   int _pathToIndex(String path) {
     // All autopilot screens fall under Home tab (index 0)
     // because Home IS the autopilot alert screen
-    if (path.startsWith('/autopilot')) return 0;
+    if (path.startsWith('/home')) return 0;
     if (path.startsWith('/trips')) return 1;
     if (path.startsWith('/notifications')) return 2;
     if (path.startsWith('/settings')) return 3;

@@ -1,69 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
+import 'package:omvrti_app/core/constants/constants.dart';
 import 'package:omvrti_app/core/utils/formatters.dart';
+import 'package:omvrti_app/core/widgets/app_button.dart';
 import 'package:omvrti_app/core/widgets/app_button_row.dart';
 import 'package:omvrti_app/core/widgets/omvrti_app_bar.dart';
+import 'package:omvrti_app/features/autopilot/model/trip_model.dart';
 import 'package:omvrti_app/features/autopilot/viewmodel/autopilot_viewmodel.dart';
-import 'package:go_router/go_router.dart';
-
-import '../../../../core/constants/constants.dart';
-import '../../model/trip_model.dart';
-
-// ConsumerWidget vs ConsumerStatefulWidget
-//
-// Use ConsumerWidget when the UI only depends on provider state
-// and does not require any local state or lifecycle methods.
-//
-// Use ConsumerStatefulWidget when the UI needs local state such as
-// TextEditingController, animations, form handling, or lifecycle methods
-// like initState and dispose.
-//
-// In this screen, ConsumerStatefulWidget is used because we handle
-// form inputs and controllers which require proper lifecycle management.
 
 class AutopilotAlertScreen extends ConsumerWidget {
   const AutopilotAlertScreen({super.key});
 
   @override
-  // In ConsumerStatefulWidget, ref is a class property we dont need to pass in build
-  // In ConsumerWidget, ref is passed directly into build
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<TripModel> tripAsync = ref.watch(tripProvider);
+    final tripAsync = ref.watch(tripProvider);
 
     return ColoredBox(
       color: AppColors.pageBackground,
-      // safearea gives auto padding to prevent any overflow and items get cut
       child: SafeArea(
         child: Column(
           children: [
             const OmvrtiAppBar(),
-            // OmvrtiAppBar(),
-            // expanded makes this to take reamining space perfectly without overflowing
             Expanded(
-              // handle three states of data getting from view_model file
               child: tripAsync.when(
-                // if loading show loading indicator
-                loading: () => const Center(child: CircularProgressIndicator()),
-
-                // if error show error message
-                error: (error, stack) => Center(
+                loading: () =>
+                    const Center(child: CircularProgressIndicator()),
+                error: (error, _) => Center(
                   child: Padding(
-                    padding: EdgeInsetsGeometry.all(AppSpacing.lg),
+                    padding: const EdgeInsets.all(AppSpacing.lg),
                     child: Text(
                       error.toString(),
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.error,
-                      ),
+                      style: AppTextStyles.bodyMedium
+                          .copyWith(color: AppColors.error),
                       textAlign: TextAlign.center,
                     ),
                   ),
                 ),
-
-                // when data arrives show the screen content
-                data: (trip) => _buildContent(context, trip, ref),
+                data: (trip) => _buildContent(context, trip),
               ),
-              // child: _buildContent(),
             ),
           ],
         ),
@@ -71,21 +47,24 @@ class AutopilotAlertScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildContent(BuildContext context, TripModel trip, WidgetRef ref) {
+  Widget _buildContent(BuildContext context, TripModel trip) {
     return SingleChildScrollView(
-      padding: EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: AppSpacing.xxxl),
+          const SizedBox(height: AppSpacing.md),
           _buildAlertBanner(),
-          const SizedBox(height: AppSpacing.xl),
-          _buildPurposeCard(trip),
-          const SizedBox(height: AppSpacing.xl),
+          const SizedBox(height: AppSpacing.lg),
+          _buildInfoCard(trip),
+          const SizedBox(height: AppSpacing.lg),
           _buildRouteCard(trip),
-          const SizedBox(height: AppSpacing.xl),
+          const SizedBox(height: AppSpacing.lg),
+          _buildServicesCard(trip),
+          const SizedBox(height: AppSpacing.lg),
           _buildTravelerCard(trip),
-          const SizedBox(height: AppSpacing.xxxl),
+          const SizedBox(height: AppSpacing.xxl),
+          // const SizedBox(height: AppSpacing.xxxl),
           // the two button row at bottom
           AppButtonRow(
             outlinedText: 'Edit Trip',
@@ -106,52 +85,56 @@ class AutopilotAlertScreen extends ConsumerWidget {
               context.push('/autopilot/flight');
             },
           ),
-          // const SizedBox(height: AppSpacing.xxl),
         ],
       ),
     );
   }
 
-  // the blue trip alert banner
+  // ── 1. Alert Banner ────────────────────────────────────────────────────────
+  // Blue banner with robot icon in a white circle, bold title, date below
+
   Widget _buildAlertBanner() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
       decoration: BoxDecoration(
+        // Brighter blue matching the design — distinct from the navy home card
         color: AppColors.primary,
         borderRadius: BorderRadius.circular(AppSpacing.lg),
       ),
-
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            // padding: EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              // color: Colors.white.withAlpha(20),
-              borderRadius: BorderRadius.circular(AppSpacing.md),
-            ),
-            child: Image.asset(
-              AppImages.autoPilotRobot,
-              width: 60,
-              height: 60,
-              fit: BoxFit.contain,
+          Image.asset(
+            AppImages.autoPilotRobot,
+            width: 48,
+            height: 48,
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => const Icon(
+              Icons.smart_toy_outlined,
+              color: Colors.white,
+              size: 32,
             ),
           ),
-
           const SizedBox(width: AppSpacing.md),
+
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Autopilot Trip Alert',
-                style: AppTextStyles.h1.copyWith(color: AppColors.surface),
+                'AutoPilot Trip Alert',
+                style: AppTextStyles.h3.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-              const SizedBox(height: AppSpacing.xs),
+              const SizedBox(height: 2),
               Text(
                 'Mon, Mar 2, 2026',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.surface,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: Colors.white.withOpacity(0.85),
                 ),
               ),
             ],
@@ -161,130 +144,204 @@ class AutopilotAlertScreen extends ConsumerWidget {
     );
   }
 
-  // the purpose card
-  Widget _buildPurposeCard(TripModel trip) {
+  // ── 2. Info Card ───────────────────────────────────────────────────────────
+  // Single white card with 3 sections divided by dividers:
+  // Purpose | Estimated Spend | Meeting Schedule + Location
+
+  Widget _buildInfoCard(TripModel trip) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.xxl),
+        borderRadius: BorderRadius.circular(AppSpacing.xl),
       ),
-
-      // content of purpose card
       child: Column(
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-
-            children: [
-              SizedBox(
-                width: 50,
-                height: 50,
-                child: Image.asset(AppImages.meetingBag),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Purpose',
-                      style: AppTextStyles.h4.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+          // ── Section 1: Purpose ─────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Row(
+              children: [
+                // Briefcase icon — matches design
+                SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Image.asset(
+                    AppImages.meetingBag,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.work_outline,
+                      color: AppColors.textSecondary,
+                      size: 28,
                     ),
-                    const SizedBox(height: 2),
-                    Wrap(
-                      spacing: AppSpacing.xs,
-                      crossAxisAlignment: WrapCrossAlignment.center,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Purpose',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        trip.purpose,
+                        style: AppTextStyles.h4,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+
+          // ── Section 2: Estimated Spend ─────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Row(
+              children: [
+                SvgPicture.asset(
+                  AppIcons.dollar,
+                  width: 44,
+                  height: 44,
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Estimated Spend',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '\$${trip.estimatedBudget.toStringAsFixed(0)}',
+                        style: AppTextStyles.price,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ── Section 3: Meeting Schedule + Location ─────────────────────
+          // Only show if meeting data is available
+          if (trip.firstMeeting != null || trip.meetingLocation != null) ...[
+            const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Blue calendar icon in a circle
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8F1FF),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.calendar_month_outlined,
+                      color: AppColors.primary,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          trip.purpose,
-                          style: AppTextStyles.h4.copyWith(
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-
-                        Text(
-                          '●',
-                          style: AppTextStyles.bodyLarge.copyWith(
+                          'Meeting Schedule',
+                          style: AppTextStyles.bodySmall.copyWith(
                             color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
+                        const SizedBox(height: 4),
 
-                        Text(
-                          trip.company,
-                          style: AppTextStyles.h4.copyWith(
-                            color: AppColors.textPrimary,
+                        // First meeting time
+                        if (trip.firstMeeting != null)
+                          Text(
+                            trip.firstMeeting!,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textPrimary,
+                              height: 1.5,
+                            ),
                           ),
-                        ),
+
+                        // Last meeting time
+                        if (trip.lastMeeting != null)
+                          Text(
+                            trip.lastMeeting!,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textPrimary,
+                              height: 1.5,
+                            ),
+                          ),
+
+                        // Meeting location — shown as a sub-section below
+                        if (trip.meetingLocation != null) ...[
+                          const SizedBox(height: AppSpacing.sm),
+                          Text(
+                            'Meeting Location',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            trip.meetingLocation!,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textPrimary,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
-
-          const Divider(),
-
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-
-            children: [
-              SizedBox(
-                width: 50,
-                height: 50,
-                child: SvgPicture.asset(AppIcons.dollar),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Estimated Budget',
-                      style: AppTextStyles.h4.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-
-                    Text(
-                      '\$ ${trip.estimatedBudget}',
-                      style: AppTextStyles.price.copyWith(
-                        color: AppColors.success,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ],
       ),
     );
   }
 
-  // Route Card
+  // ── 3. Route Card ──────────────────────────────────────────────────────────
+  // Origin / Destination cities, then "Depart Date" / "Return Date" labels
+  // with bold dates AND times below each, then trip duration
 
   Widget _buildRouteCard(TripModel trip) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.xxl),
+        borderRadius: BorderRadius.circular(AppSpacing.xl),
       ),
-
       child: Column(
         children: [
+          // ── Cities row ─────────────────────────────────────────────────
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-
             children: [
-              // origin information
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,55 +354,43 @@ class AutopilotAlertScreen extends ConsumerWidget {
                         color: AppColors.textSecondary,
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      trip.originAirport,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
                   ],
                 ),
               ),
 
-              // flight depart and return icon
+              // Flight return icon
               Padding(
-                padding: const EdgeInsets.only(top: 2),
+                padding: const EdgeInsets.only(top: 4),
                 child: SizedBox(
                   width: 24,
                   height: 24,
-                  child: Image.asset(AppImages.flightReturn),
+                  child: Image.asset(
+                    AppImages.flightReturn,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.swap_horiz,
+                      color: AppColors.accent,
+                      size: 20,
+                    ),
+                  ),
                 ),
               ),
 
-              // destination information
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
-                  // textDirection: TextDirection.rtl,
                   children: [
                     Text(
                       trip.destCity,
                       style: AppTextStyles.h4,
                       textAlign: TextAlign.right,
                     ),
-
                     const SizedBox(height: 2),
                     Text(
                       trip.destState,
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.textSecondary,
                       ),
-
                       textAlign: TextAlign.right,
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      trip.destAirport,
-                      textAlign: TextAlign.right,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
                     ),
                   ],
                 ),
@@ -353,76 +398,210 @@ class AutopilotAlertScreen extends ConsumerWidget {
             ],
           ),
 
+          // const SizedBox(height: AppSpacing.md),
+          // const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
           const Divider(),
+          // const SizedBox(height: AppSpacing.md),R
 
+          // ── Dates row — "Depart Date" / "Return Date" labels ───────────
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Depart', style: AppTextStyles.label),
-                  const SizedBox(height: 4),
-                  Text(
-                    Formatters.formatDate(trip.departDate),
-                    style: AppTextStyles.h4,
-                  ),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Label: "Depart Date" (matching design exactly)
+                    Text(
+                      'Depart Date',
+                      style: AppTextStyles.label.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      Formatters.formatDate(trip.departDate),
+                      style: AppTextStyles.h4,
+                    ),
+                    // Time range below the date
+                    if (trip.departTime != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        trip.departTime!,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text('Return', style: AppTextStyles.label),
-                  const SizedBox(height: 4),
-                  Text(
-                    Formatters.formatDate(trip.returnDate),
-                    style: AppTextStyles.h4,
-                  ),
-                ],
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Return Date',
+                      style: AppTextStyles.label.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      Formatters.formatDate(trip.returnDate),
+                      style: AppTextStyles.h4,
+                      textAlign: TextAlign.right,
+                    ),
+                    if (trip.returnTime != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        trip.returnTime!,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                          fontSize: 11,
+                        ),
+                        textAlign: TextAlign.right,
+                      ),
+                    ],
+                  ],
+                ),
               ),
             ],
           ),
 
           const SizedBox(height: AppSpacing.md),
 
+          // Trip duration — centered, blue text matching design
           Text(
             'Trip Duration : ${trip.tripDuration} Days',
-            style: AppTextStyles.bodyMedium,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
     );
   }
 
+  // ── 4. Services Card ───────────────────────────────────────────────────────
+  // Accommodation + Car Rental in a single card with divider between them
+  // Each row has a blue circular icon, a gray label, and black description
+
+  Widget _buildServicesCard(TripModel trip) {
+    final hasAccommodation = trip.accommodationNote != null;
+    final hasCar = trip.carRentalNote != null;
+
+    // Don't render the card if neither service is present
+    if (!hasAccommodation && !hasCar) return const SizedBox.shrink();
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSpacing.xl),
+      ),
+      child: Column(
+        children: [
+          if (hasAccommodation)
+            _buildServiceRow(
+              icon: Icons.hotel_outlined,
+              label: 'Accommodation',
+              description: trip.accommodationNote!,
+            ),
+
+          if (hasAccommodation && hasCar)
+            const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+
+          if (hasCar)
+            _buildServiceRow(
+              icon: Icons.directions_car_outlined,
+              label: 'Car Rental',
+              description: trip.carRentalNote!,
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildServiceRow({
+    required IconData icon,
+    required String label,
+    required String description,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Row(
+        children: [
+          // Blue circular icon — matches the design
+          Container(
+            width: 44,
+            height: 44,
+            decoration: const BoxDecoration(
+              color: Color(0xFFE8F1FF),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: const Color(0xFF4A90E2), size: 22),
+          ),
+          const SizedBox(width: AppSpacing.md),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  description,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── 5. Traveler Card ───────────────────────────────────────────────────────
+
   Widget _buildTravelerCard(TripModel trip) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.lg),
+        borderRadius: BorderRadius.circular(AppSpacing.xl),
       ),
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Travelers',
-            style: AppTextStyles.h4.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-
           const SizedBox(height: AppSpacing.sm),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(
-                width: 24,
-                height: 24,
-                child: SvgPicture.asset(AppIcons.profileIcon),
+              SvgPicture.asset(
+                AppIcons.profileIcon,
+                width: 20,
+                height: 20,
               ),
-
-              const SizedBox(width: AppSpacing.xs),
-
+              const SizedBox(width: AppSpacing.sm),
               Text(trip.travelerName, style: AppTextStyles.h4),
             ],
           ),
@@ -430,4 +609,36 @@ class AutopilotAlertScreen extends ConsumerWidget {
       ),
     );
   }
+
+  // ── 6. Button Row ──────────────────────────────────────────────────────────
+  // "Edit Trip" outlined with red border | "View Flight >" filled red
+
+//   Widget _buildButtonRow(BuildContext context) {
+//     return Row(
+//       children: [
+//         // Edit Trip — outlined button with red border
+//         Expanded(
+//           child: AppOutlinedButton(
+//             text: 'Edit Trip',
+//             borderColor: AppColors.accent,
+//             onPressed: () {
+//               // TODO: Navigate to edit trip screen
+//             },
+//           ),
+//         ),
+//         const SizedBox(width: AppSpacing.lg),
+
+//         // View Flight — filled red with forward chevron
+//         Expanded(
+//           child: AppFilledButton(
+//             text: 'View Flight',
+//             icon: AppIcons.forward,
+//             onPressed: () => context.push('/autopilot/flight'),
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+// }
+
 }

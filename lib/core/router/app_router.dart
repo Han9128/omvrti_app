@@ -8,12 +8,14 @@
 
 import 'package:go_router/go_router.dart';
 import 'package:omvrti_app/core/widgets/main_shell.dart';
+import 'package:omvrti_app/features/auth/view/screens/signup_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/autopilot_alert_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/autopilot_flight_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/notification_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/setting_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/trip_screen.dart';
-import 'package:omvrti_app/features/auth/view/screens/login_screen.dart ';
+import 'package:omvrti_app/features/auth/view/screens/login_screen.dart';
+import 'package:omvrti_app/features/home/view/home_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -29,9 +31,11 @@ class AppRouter {
 
     routes: [
       GoRoute(path: '/login', builder: (context,state) => const LoginScreen()),
+      GoRoute(path: '/signup', builder: (context,state)=> const SignupScreen()),
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
         routes: [
+          GoRoute(path: '/home', builder: (context,state) => const HomeScreen()),
           GoRoute(
             path: '/autopilot/alert',
             // name is optional but useful — lets you navigate by name
