@@ -11,4 +11,5 @@ class AppImages {
   static const String flightReturn = 'assets/images/flight_return.png';
   static const String login_trip_image = 'assets/images/login_trip_image.jpg';
   static const String login_cloud_image = 'assets/images/login_clouds.jpg';
+  static const String united_logo = 'assets/images/united_logo_image.png';
 }

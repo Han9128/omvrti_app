@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:omvrti_app/core/constants/constants.dart';
 import 'package:omvrti_app/core/widgets/omvrti_app_bar.dart';
 import 'package:omvrti_app/features/home/model/home_state.dart';
-import 'package:omvrti_app/features/home/view/widgets/calendar_bottom_sheet.dart';
+import 'package:omvrti_app/features/home/view/widgets/add_meeting_bottom_sheet.dart';
 import 'package:omvrti_app/features/home/viewmodel/home_viewmodel.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -24,554 +24,280 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    // Listen for when a trip is successfully fetched from the calendar.
-    // When fetchedTrip becomes non-null, navigate to the Alert Screen.
-    //
-    // We use ref.listen (not ref.watch) because navigation is a side effect —
-    // it doesn't affect what we display, it's an action we perform.
-    ref.listen<HomeState>(homeProvider, (previous, next) {
-      // Only navigate when the trip JUST became available
-      // (previous had no trip, next has a trip)
-      if (previous?.fetchedTrip == null && next.fetchedTrip != null) {
-        // Navigate to Alert Screen.
-        // The Alert Screen currently uses its own provider to fetch trip data.
-        // TODO: When we refactor the Alert Screen, pass the trip via extra:
-        // context.go('/autopilot/alert', extra: next.fetchedTrip);
-        context.go('/autopilot/alert');
-      }
-    });
+Widget build(BuildContext context) {
+  ref.listen<HomeState>(homeProvider, (previous, next) {
+    if (previous?.fetchedTrip == null && next.fetchedTrip != null) {
+      context.go('/autopilot/alert');
+    }
+  });
 
-    final homeState = ref.watch(homeProvider);
+  final state = ref.watch(homeProvider);
 
-    return ColoredBox(
+  return Scaffold(
+    body: ColoredBox(
       color: AppColors.pageBackground,
       child: SafeArea(
         bottom: false,
         child: Column(
           children: [
-            const OmvrtiAppBar(),
+            const OmvrtiAppBar(showBack: true),
+
             Expanded(
-              child: _buildContent(homeState),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildContent(HomeState state) {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.lg,
-        AppSpacing.lg,
-        AppSpacing.xxxl,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildGreetingCard(state),
-          const SizedBox(height: AppSpacing.lg),
-          _buildEmptyStateCard(state),
-          const SizedBox(height: AppSpacing.lg),
-          _buildRewardsCard(state),
-          const SizedBox(height: AppSpacing.lg),
-          _buildQuickActionsCard(),
-        ],
-      ),
-    );
-  }
-
-  // ── 1. Greeting Card ────────────────────────────────────────────────────────
-
-  Widget _buildGreetingCard(HomeState state) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF1A3C8F),
-            Color(0xFF2756C5),
-            Color(0xFF1E4DB7),
-          ],
-          stops: [0.0, 0.6, 1.0],
-        ),
-        borderRadius: BorderRadius.circular(AppSpacing.xxl),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppSpacing.xxl),
-        child: Stack(
-          children: [
-            // Decorative circles
-            Positioned(
-              top: -20,
-              right: -20,
-              child: Container(
-                width: 110,
-                height: 110,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.06),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 10,
-              right: 30,
-              child: Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.05),
-                ),
-              ),
-            ),
-
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.lg,
-                    AppSpacing.lg,
-                    AppSpacing.lg,
-                    0,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        state.greeting.toUpperCase(),
-                        style: AppTextStyles.label.copyWith(
-                          color: Colors.white.withOpacity(0.6),
-                          letterSpacing: 1.2,
-                          fontSize: 10,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        state.userName.isEmpty ? 'Traveler' : state.userName,
-                        style: AppTextStyles.h3.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                          vertical: AppSpacing.sm,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(AppSpacing.sm),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.calendar_today_outlined,
-                              size: 13,
-                              color: Colors.white.withOpacity(0.8),
-                            ),
-                            const SizedBox(width: AppSpacing.xs),
-                            Text(
-                              "No upcoming trips · Let's fix that!",
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: Colors.white.withOpacity(0.75),
-                                fontWeight: FontWeight.w500,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                    ],
-                  ),
-                ),
-
-                // Plane route arc
-                SizedBox(
-                  height: 70,
-                  width: double.infinity,
-                  child: CustomPaint(painter: _PlaneRoutePainter()),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ── 2. Empty State Card ─────────────────────────────────────────────────────
-
-  Widget _buildEmptyStateCard(HomeState state) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.xxl),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: const Color(0xFFEEF2FF),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(
-              Icons.home_outlined,
-              color: Color(0xFF1A3C8F),
-              size: 28,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            'Your travel home',
-            style: AppTextStyles.h4.copyWith(fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'Add your first trip to get started.\nImport from calendar or add manually.',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textMuted,
-              height: 1.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppSpacing.xl),
-
-          // ── Import from Calendar button ──────────────────────────────────
-          // Shows the bottom sheet — does NOT directly trigger OAuth.
-          // The user sees the consent sheet first, then confirms.
-          _buildCalendarButton(state),
-          const SizedBox(height: AppSpacing.sm),
-          _buildManualButton(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCalendarButton(HomeState state) {
-    return GestureDetector(
-      onTap: state.isCalendarLoading
-          ? null
-          // Show the bottom sheet — user confirms before OAuth launches
-          : () => CalendarBottomSheet.showAsBottomSheet(context),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.md,
-        ),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1A3C8F),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(14),
-          child: Stack(
-            children: [
-              Positioned(
-                right: -10,
-                top: -10,
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.06),
-                  ),
-                ),
-              ),
-              Row(
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: state.isCalendarLoading
-                        ? const Padding(
-                            padding: EdgeInsets.all(8),
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Icon(
-                            Icons.calendar_month_outlined,
-                            color: Colors.white,
-                            size: 18,
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  children: [
+                    // ─────────────────────────────────────────────
+                    // 🔵 BLUE HERO SECTION (FIXED)
+                    // ─────────────────────────────────────────────
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                      child: Container(
+                        width: double.infinity,
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              AppColors.primary,
+                              AppColors.pageBackground,
+                            ],
+                            stops: [0.0, 1.0],
                           ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          // Label changes based on current loading phase
-                          state.calendarButtonLabel,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 12,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(20),
+                            topRight: Radius.circular(20),
                           ),
                         ),
-                        const SizedBox(height: 1),
-                        Text(
-                          'Connect and sync automatically',
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: Colors.white.withOpacity(0.6),
-                            fontSize: 10,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: const Icon(
-                      Icons.chevron_right,
-                      color: Colors.white,
-                      size: 16,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+                        child: Padding(
+  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0), // 👈 adds inner spacing
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _buildGreeting(state),
+      const SizedBox(height: AppSpacing.lg),
 
-  Widget _buildManualButton() {
-    return GestureDetector(
-      onTap: () {
-        // TODO: Navigate to manual trip entry screen
-      },
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.md,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.pageBackground, width: 1.5),
-        ),
+      _buildRewardsBanner(state),
+      const SizedBox(height: AppSpacing.md),
+
+      _buildStatTiles(state),
+
+      const SizedBox(height: AppSpacing.lg),
+
+      Align(
+        alignment: Alignment.centerRight,
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF0EE),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.add, color: AppColors.accent, size: 20),
+            const Icon(
+              Icons.dashboard_customize_outlined,
+              color: Colors.white,
+              size: 15,
             ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Add trip manually',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 1),
-                  Text(
-                    'Enter your trip details yourself',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textMuted,
-                      fontSize: 10,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: AppColors.pageBackground,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: const Icon(
-                Icons.chevron_right,
-                color: AppColors.textMuted,
-                size: 16,
+            const SizedBox(width: 4),
+            Text(
+              'Add Widget',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                // decoration: TextDecoration.underline,
               ),
             ),
           ],
         ),
       ),
+
+      const SizedBox(height: 20),
+
+      _buildUpcomingTripCard(),
+    ],
+  ),
+),                      ),
+                    ),
+
+                    // ─────────────────────────────────────────────
+                    // ⚪ WHITE SECTION
+                    // ─────────────────────────────────────────────
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        AppSpacing.lg,
+                        AppSpacing.lg,
+                        AppSpacing.xxxl,
+                      ),
+                      child: _buildAcceptTripCard(state),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+  // ── Custom AppBar on gradient background ──────────────────────────────────
+  // We can't use OmvrtiAppBar directly because it has a white background.
+  // We rebuild it transparent so the gradient shows through.
+  // Widget _buildAppBar() {
+  //   return Padding(
+  //     padding: const EdgeInsets.symmetric(
+  //       horizontal: AppSpacing.lg,
+  //       vertical: AppSpacing.md,
+  //     ),
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //       children: [
+  //         // Hamburger menu — white on blue
+  //         const Icon(Icons.menu, color: Colors.white, size: 28),
+
+  //         // OmVrti.ai logo — white version on blue background
+  //         RichText(
+  //           text: const TextSpan(
+  //             children: [
+  //               TextSpan(
+  //                 text: 'Om',
+  //                 style: TextStyle(
+  //                   fontFamily: 'PlusJakartaSans',
+  //                   fontSize: 22,
+  //                   fontWeight: FontWeight.w800,
+  //                   color: Colors.white,
+  //                 ),
+  //               ),
+  //               TextSpan(
+  //                 text: 'V',
+  //                 style: TextStyle(
+  //                   fontFamily: 'PlusJakartaSans',
+  //                   fontSize: 22,
+  //                   fontWeight: FontWeight.w800,
+  //                   // Keep the red V even on blue — it's the brand mark
+  //                   color: Color(0xFFFF6B6B),
+  //                 ),
+  //               ),
+  //               TextSpan(
+  //                 text: 'rti.ai',
+  //                 style: TextStyle(
+  //                   fontFamily: 'PlusJakartaSans',
+  //                   fontSize: 22,
+  //                   fontWeight: FontWeight.w800,
+  //                   color: Colors.white,
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+
+  //         // Avatar — same as before
+  //         const CircleAvatar(
+  //           radius: 18,
+  //           backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=12'),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
+  // ── "Hey, Sam!" greeting ──────────────────────────────────────────────────
+  Widget _buildGreeting(HomeState state) {
+    final firstName = state.userName.isEmpty
+        ? 'Traveler'
+        : state.userName.split(' ').first;
+
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: 'Hey, ',
+            style: AppTextStyles.h2.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w400,
+              fontSize: 26,
+            ),
+          ),
+          TextSpan(
+            text: '$firstName!',
+            style: AppTextStyles.h2.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+              fontSize: 26,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  // ── 3. Rewards Card ─────────────────────────────────────────────────────────
-
-  Widget _buildRewardsCard(HomeState state) {
+  // ── Rewards banner — white card inside the blue zone ─────────────────────
+  Widget _buildRewardsBanner(HomeState state) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.xl),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         children: [
+          // Medal icon
           Container(
-            width: 42,
-            height: 42,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFFFF3CD), Color(0xFFFFE082)],
-              ),
-              borderRadius: BorderRadius.circular(12),
+              color: const Color(0xFFFFF8E1),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
-              Icons.star_rounded,
-              color: AppColors.warning,
-              size: 22,
+              Icons.workspace_premium_rounded,
+              color: Color(0xFFFFB800),
+              size: 24,
             ),
           ),
           const SizedBox(width: AppSpacing.md),
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'OmVrti Rewards',
+                  'Total OmVrti Rewards Earned',
                   style: AppTextStyles.bodySmall.copyWith(
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                     fontSize: 12,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xs),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(2),
-                        child: LinearProgressIndicator(
-                          value: state.rewardPoints / 1000,
-                          backgroundColor: AppColors.pageBackground,
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            AppColors.warning,
-                          ),
-                          minHeight: 4,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(
-                      '${state.rewardPoints} pts',
-                      style: AppTextStyles.label.copyWith(fontSize: 10),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 3),
                 Text(
-                  'Earn on your first booking',
-                  style: AppTextStyles.label.copyWith(fontSize: 10),
+                  'Book early, earn more.',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: 11,
+                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: AppSpacing.sm),
-          const Icon(Icons.chevron_right, color: AppColors.textMuted, size: 18),
-        ],
-      ),
-    );
-  }
 
-  // ── 4. Quick Actions Grid ───────────────────────────────────────────────────
-
-  Widget _buildQuickActionsCard() {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.xl),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'QUICK ACTIONS',
-            style: AppTextStyles.label.copyWith(
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: AppSpacing.sm,
-            mainAxisSpacing: AppSpacing.sm,
-            childAspectRatio: 1.8,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              _buildActionTile(
-                label: 'Book Flight',
-                icon: Icons.flight_takeoff_rounded,
-                iconColor: const Color(0xFF1A3C8F),
-                bgColor: const Color(0xFFF7F8FF),
-                iconBgColor: const Color(0xFFE8EEFF),
-                onTap: () {},
+              Text(
+                '\$${state.rewardsEarned.toStringAsFixed(0)}',
+                style: AppTextStyles.price.copyWith(
+                  fontSize: 22,
+                  color: AppColors.success,
+                ),
               ),
-              _buildActionTile(
-                label: 'Book Hotel',
-                icon: Icons.hotel_outlined,
-                iconColor: AppColors.accent,
-                bgColor: const Color(0xFFFFF8F7),
-                iconBgColor: const Color(0xFFFFE8E5),
-                onTap: () {},
-              ),
-              _buildActionTile(
-                label: 'Car Rental',
-                icon: Icons.directions_car_outlined,
-                iconColor: AppColors.success,
-                bgColor: const Color(0xFFF3FFF8),
-                iconBgColor: const Color(0xFFD6F5E3),
-                onTap: () {},
-              ),
-              _buildActionTile(
-                label: 'Expense Report',
-                icon: Icons.receipt_long_outlined,
-                iconColor: AppColors.warning,
-                bgColor: const Color(0xFFFFFBF0),
-                iconBgColor: const Color(0xFFFFF0CC),
-                onTap: () {},
+              Text(
+                'OmVrti Rewards',
+                style: AppTextStyles.label.copyWith(
+                  color: AppColors.success,
+                  fontSize: 9,
+                ),
               ),
             ],
           ),
@@ -580,116 +306,437 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildActionTile({
-    required String label,
+  // ── 3 stat tiles ──────────────────────────────────────────────────────────
+  Widget _buildStatTiles(HomeState state) {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildStatTile(
+            icon: Icons.attach_money_rounded,
+            value: '\$${state.totalSpend.toStringAsFixed(0)}',
+            label: 'Total Spend',
+          ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: _buildStatTile(
+            icon: Icons.access_time_rounded,
+            value: state.manDaysSaved.toStringAsFixed(1),
+            label: 'Man Days Saved',
+          ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: _buildStatTile(
+            icon: Icons.business_outlined,
+            value: '\$${state.companySaved.toStringAsFixed(0)}',
+            label: 'Company Saved',
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatTile({
     required IconData icon,
-    required Color iconColor,
-    required Color bgColor,
-    required Color iconBgColor,
-    required VoidCallback onTap,
+    required String value,
+    required String label,
   }) {
-    return GestureDetector(
-      onTap: onTap,
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        vertical: AppSpacing.md,
+        horizontal: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: const BoxDecoration(
+              color: Color(0xFFEEF4FF),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: const Color(0xFF3B82F6), size: 18),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            value,
+            style: AppTextStyles.h4.copyWith(
+              fontWeight: FontWeight.w800,
+              fontSize: 15,
+            ),
+          ),
+          Text(
+            label,
+            style: AppTextStyles.label.copyWith(fontSize: 9),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // UPCOMING TRIP CARD
+  //
+  // White rounded card that visually overlaps the blue zone.
+  // Because the gradient is the page background, this card naturally
+  // appears to sit on top of the blue area and extends into the white zone.
+  // ─────────────────────────────────────────────────────────────────────────
+  Widget _buildUpcomingTripCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header: "Upcoming Trip" + "+ Add a Meeting" red button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Upcoming Trip',
+                style: AppTextStyles.h4.copyWith(fontWeight: FontWeight.w800),
+              ),
+              GestureDetector(
+                onTap: () => AddMeetingBottomSheet.show(context),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.add, color: Colors.white, size: 14),
+                      const SizedBox(width: 3),
+                      Text(
+                        'Add a Meeting',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+
+          // Inner trip card with border
+          _buildEmptyTripCard(),
+          const SizedBox(height: AppSpacing.md),
+
+          // Pagination dots
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildDot(active: true),
+              const SizedBox(width: 6),
+              _buildDot(active: false),
+              const SizedBox(width: 6),
+              _buildDot(active: false),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // The empty trip card — just status chips + "No trips yet" message
+  // No airport names as requested
+  Widget _buildEmptyTripCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFEEEEEE), width: 1),
+      ),
+      child: Column(
+        children: [
+          // Status chips row
+          Row(
+            children: [
+              // "● Active" green pill
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: AppColors.success.withOpacity(0.4),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: AppColors.success,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Active',
+                      style: AppTextStyles.label.copyWith(
+                        color: AppColors.success,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+
+              // Info chips
+              Expanded(
+                child: Row(
+                  children: [
+                    _buildInfoChip(label: 'DEPART', value: '—'),
+                    const SizedBox(width: 4),
+                    _buildInfoChip(label: 'RETURN', value: '—'),
+                    const SizedBox(width: 4),
+                    _buildInfoChip(label: 'TRAVELERS', value: '—'),
+                    const SizedBox(width: 4),
+                    _buildInfoChip(label: 'DAYS AWAY', value: '—'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: AppSpacing.xl),
+
+          // "No trips yet" — simple centered message, no airport names
+          Column(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0F4FF),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.flight_outlined,
+                  color: Color(0xFF3B82F6),
+                  size: 26,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'No trips yet',
+                style: AppTextStyles.h4.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Tap "+ Add a Meeting" to get started',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textMuted,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+
+          const SizedBox(height: AppSpacing.lg),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoChip({required String label, required String value}) {
+    return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
         decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFEEEEEE), width: 1),
+          borderRadius: BorderRadius.circular(6),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 30,
-              height: 30,
-              decoration: BoxDecoration(
-                color: iconBgColor,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, color: iconColor, size: 16),
-            ),
-            const SizedBox(height: AppSpacing.xs),
             Text(
               label,
+              style: AppTextStyles.label.copyWith(
+                fontSize: 7,
+                letterSpacing: 0,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            Text(
+              value,
               style: AppTextStyles.bodySmall.copyWith(
-                color: iconColor,
                 fontWeight: FontWeight.w700,
                 fontSize: 11,
+                color: AppColors.textPrimary,
               ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
       ),
     );
   }
-}
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PLANE ROUTE PAINTER — same as before
-// ─────────────────────────────────────────────────────────────────────────────
-class _PlaneRoutePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-
-    final arcPath = Path()
-      ..moveTo(w * 0.08, h * 0.75)
-      ..quadraticBezierTo(w * 0.5, -h * 0.3, w * 0.92, h * 0.45);
-
-    _drawDashedPath(
-      canvas, arcPath,
-      Paint()
-        ..color = Colors.white.withOpacity(0.25)
-        ..strokeWidth = 1.5
-        ..style = PaintingStyle.stroke,
+  Widget _buildDot({required bool active}) {
+    return Container(
+      width: active ? 10 : 8,
+      height: active ? 10 : 8,
+      decoration: BoxDecoration(
+        color: active
+            ? AppColors.primary
+            : AppColors.textMuted.withOpacity(0.3),
+        shape: BoxShape.circle,
+      ),
     );
-
-    final dotPaint = Paint()..style = PaintingStyle.fill;
-    dotPaint.color = Colors.white.withOpacity(0.5);
-    canvas.drawCircle(Offset(w * 0.08, h * 0.75), 4, dotPaint);
-    dotPaint.color = Colors.white;
-    canvas.drawCircle(Offset(w * 0.08, h * 0.75), 2, dotPaint);
-    dotPaint.color = const Color(0xFFCC3300).withOpacity(0.9);
-    canvas.drawCircle(Offset(w * 0.92, h * 0.45), 4, dotPaint);
-    dotPaint.color = Colors.white;
-    canvas.drawCircle(Offset(w * 0.92, h * 0.45), 2, dotPaint);
-
-    canvas.save();
-    canvas.translate(w * 0.5, h * 0.18);
-    canvas.rotate(-0.2);
-    final p = Paint()..color = Colors.white.withOpacity(0.95)..style = PaintingStyle.fill;
-    canvas.drawPath(Path()..moveTo(-14,0)..lineTo(14,0)..lineTo(12,-2)..lineTo(10,0)..lineTo(12,2)..lineTo(14,0), p);
-    canvas.drawPath(Path()..moveTo(14,0)..lineTo(20,-1.5)..lineTo(20,1.5)..close(), p);
-    canvas.drawPath(Path()..moveTo(2,0)..lineTo(8,-9)..lineTo(10,-9)..lineTo(6,0)..lineTo(10,9)..lineTo(8,9)..close(), p..color = Colors.white.withOpacity(0.9));
-    canvas.drawPath(Path()..moveTo(-10,0)..lineTo(-6,-6)..lineTo(-4,-6)..lineTo(-6,0)..close(), p..color = Colors.white.withOpacity(0.85));
-    canvas.restore();
-
-    final labelStyle = TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 0.5);
-    _drawText(canvas, 'SFO', Offset(w * 0.04, h * 0.82), labelStyle);
-    _drawText(canvas, 'JFK', Offset(w * 0.88, h * 0.52), labelStyle);
   }
 
-  void _drawText(Canvas canvas, String text, Offset position, TextStyle style) {
-    final tp = TextPainter(text: TextSpan(text: text, style: style), textDirection: TextDirection.ltr)..layout();
-    tp.paint(canvas, position);
+  // ─────────────────────────────────────────────────────────────────────────
+  // ACCEPT YOUR TRIP CARD
+  // ─────────────────────────────────────────────────────────────────────────
+  Widget _buildAcceptTripCard(HomeState state) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Accept your trip',
+                style: AppTextStyles.h4.copyWith(fontWeight: FontWeight.w800),
+              ),
+              // "Pending Trip" yellow pill
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF3CC),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFFFFB800).withOpacity(0.4),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  'Pending Trip',
+                  style: AppTextStyles.label.copyWith(
+                    color: const Color(0xFF9B6D00),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+
+          // Empty state for new user
+          if (state.pendingTrips.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+              child: Center(
+                child: Text(
+                  'No pending trips',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ),
+            )
+          else
+            ...state.pendingTrips.map((trip) => _buildPendingTripRow(trip)),
+        ],
+      ),
+    );
   }
 
-  void _drawDashedPath(Canvas canvas, Path path, Paint paint) {
-    for (final metric in path.computeMetrics()) {
-      double distance = 0;
-      bool drawing = true;
-      while (distance < metric.length) {
-        final segLen = drawing ? 6.0 : 4.0;
-        final next = (distance + segLen).clamp(0.0, metric.length);
-        if (drawing) canvas.drawPath(metric.extractPath(distance, next), paint);
-        distance = next;
-        drawing = !drawing;
-      }
-    }
+  Widget _buildPendingTripRow(PendingTrip trip) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.md,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFEEEEEE), width: 1),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  trip.title,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${trip.dateRange}  –  ${trip.location}',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_right, color: AppColors.textMuted, size: 20),
+        ],
+      ),
+    );
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

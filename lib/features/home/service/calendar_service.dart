@@ -98,7 +98,8 @@ class CalendarService {
       // and return the cached account directly (silent sign-in).
       //
       // Returns null if the user cancels the sign-in flow.
-      await _googleSignIn.disconnect();
+      // disconnect() silently — ignore errors if no prior session exists
+      try { await _googleSignIn.disconnect(); } catch (_) {}
       final GoogleSignInAccount? account = await _googleSignIn.signIn();
 
       // User tapped the back button or dismissed the sign-in screen
@@ -168,10 +169,7 @@ class CalendarService {
 
       return CalendarSuccess(trip: trip);
     } catch (e) {
-      // Catch any unexpected errors — network failure, API errors etc.
-      return CalendarFailure(
-        message: 'Could not connect to Google Calendar. Please try again.',
-      );
+      return CalendarFailure(message: e.toString());
     }
   }
 

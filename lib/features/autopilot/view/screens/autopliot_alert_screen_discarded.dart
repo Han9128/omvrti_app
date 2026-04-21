@@ -453,7 +453,7 @@ class AutopilotAlertScreen extends ConsumerWidget {
         children: [
           if (trip.accommodationNote != null)
             _buildServiceRow(
-              icon: Icons.hotel_outlined,
+              icon: AppIcons.bed,
               label: 'Accommodation',
               description: trip.accommodationNote!,
             ),
@@ -461,7 +461,7 @@ class AutopilotAlertScreen extends ConsumerWidget {
             const Divider(height: 1),
           if (trip.carRentalNote != null)
             _buildServiceRow(
-              icon: Icons.directions_car_outlined,
+              icon: AppIcons.car_rental,
               label: 'Car Rental',
               description: trip.carRentalNote!,
             ),
@@ -472,7 +472,7 @@ class AutopilotAlertScreen extends ConsumerWidget {
 
   // Reusable row for each service item
   Widget _buildServiceRow({
-    required IconData icon,
+    required String icon,
     required String label,
     required String description,
   }) {
@@ -486,10 +486,13 @@ class AutopilotAlertScreen extends ConsumerWidget {
             width: 50,
             height: 50,
             decoration: const BoxDecoration(
-              color: Color(0xFFE3EEFF),
+              color: AppColors.primary,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: const Color(0xFF4A90E2), size: 24),
+            child: SvgPicture.asset(icon, width: 24, height: 24, colorFilter: const ColorFilter.mode(
+    AppColors.textWhite,
+    BlendMode.srcIn,
+  ),),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(

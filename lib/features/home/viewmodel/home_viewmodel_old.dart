@@ -14,60 +14,50 @@ final calendarServiceProvider = Provider<CalendarService>(
   (ref) => CalendarService(),
 );
 
-// Using Riverpod 3 NotifierProvider — StateNotifierProvider is removed in v3
-final homeProvider = NotifierProvider<HomeNotifier, HomeState>(
-  HomeNotifier.new,
-);
+final homeProvider = NotifierProvider<HomeNotifier, HomeState>(HomeNotifier.new);
 
 // ─────────────────────────────────────────────────────────────────────────────
-// HOME NOTIFIER — Riverpod 3 style
+// HOME NOTIFIER
 // ─────────────────────────────────────────────────────────────────────────────
 
 class HomeNotifier extends Notifier<HomeState> {
-  // In Riverpod 3, build() replaces the constructor + super(initialState)
-  // It runs once when the provider is first read and sets the initial state
   @override
-  HomeState build() {
-    return const HomeState();
-  }
+  HomeState build() => const HomeState();
 
-  // loadUserProfile() — called from initState when screen first mounts
   Future<void> loadUserProfile() async {
     try {
-      final homeService = ref.read(homeServiceProvider);
-      final profile = await homeService.fetchUserProfile();
-
+      final greeting = ref.read(homeServiceProvider).getGreeting();
+      final profile = await ref.read(homeServiceProvider).fetchUserProfile();
       state = state.copyWith(
+        greeting: greeting,
         userName: profile['userName'] as String,
-        // Stats are 0 for a new user — will be populated from real API later
-        totalSpend: 0,
-        manDaysSaved: 0,
-        companySaved: 0,
-        rewardsEarned: 0,
-        pendingTrips: const [],
+        rewardPoints: profile['rewardPoints'] as int,
       );
     } catch (e) {
-      // Non-critical — show defaults if profile load fails
-      state = state.copyWith(userName: 'Traveler');
+      state = state.copyWith(
+        greeting: ref.read(homeServiceProvider).getGreeting(),
+        userName: 'Traveler',
+      );
     }
   }
 
-  // connectAndFetchCalendar() — triggered from "Import from Google Calendar"
-  // Writes fetched trip into selectedTripProvider so Alert Screen picks it up
   Future<void> connectAndFetchCalendar() async {
+    // Phase 1 — show "Connecting to Google..."
     state = state.copyWith(
       calendarStatus: CalendarStatus.connecting,
       errorMessage: null,
     );
 
     await Future.delayed(const Duration(milliseconds: 500));
+
+    // Phase 2 — show "Analysing your calendar..."
     state = state.copyWith(calendarStatus: CalendarStatus.fetchingTrips);
 
-    final calendarService = ref.read(calendarServiceProvider);
-    final result = await calendarService.connectAndFetchTrip();
+    final result = await ref.read(calendarServiceProvider).connectAndFetchTrip();
 
     if (result is CalendarSuccess) {
-      // Write to shared bridge provider so Alert Screen uses calendar trip
+      // Write the calendar trip into selectedTripProvider so the Alert Screen
+      // uses real calendar data instead of mock data.
       ref.read(selectedTripProvider.notifier).setTrip(result.trip);
 
       state = state.copyWith(

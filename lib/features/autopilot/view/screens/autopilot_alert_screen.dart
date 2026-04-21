@@ -507,7 +507,7 @@ class AutopilotAlertScreen extends ConsumerWidget {
         children: [
           if (hasAccommodation)
             _buildServiceRow(
-              icon: Icons.hotel_outlined,
+              icon: AppIcons.bed_vector,
               label: 'Accommodation',
               description: trip.accommodationNote!,
             ),
@@ -517,9 +517,10 @@ class AutopilotAlertScreen extends ConsumerWidget {
 
           if (hasCar)
             _buildServiceRow(
-              icon: Icons.directions_car_outlined,
+              icon: AppIcons.car_rental,
               label: 'Car Rental',
               description: trip.carRentalNote!,
+              iconPadding: 4,
             ),
         ],
       ),
@@ -527,9 +528,10 @@ class AutopilotAlertScreen extends ConsumerWidget {
   }
 
   Widget _buildServiceRow({
-    required IconData icon,
+    required String icon,
     required String label,
     required String description,
+    double iconPadding = 7,
   }) {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -537,13 +539,22 @@ class AutopilotAlertScreen extends ConsumerWidget {
         children: [
           // Blue circular icon — matches the design
           Container(
-            width: 44,
-            height: 44,
+            width:32,
+            height: 32,
+            alignment: Alignment.center,
             decoration: const BoxDecoration(
-              color: Color(0xFFE8F1FF),
+              color: AppColors.primary,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: const Color(0xFF4A90E2), size: 22),
+            padding: EdgeInsets.all(iconPadding),
+            child: SvgPicture.asset(
+              icon,
+              fit: BoxFit.contain,
+              colorFilter: const ColorFilter.mode(
+                AppColors.textWhite,
+                BlendMode.srcIn,
+              ),
+            ),
           ),
           const SizedBox(width: AppSpacing.md),
 

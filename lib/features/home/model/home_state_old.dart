@@ -1,55 +1,42 @@
 import 'package:omvrti_app/features/autopilot/model/trip_model.dart';
 
+// CalendarStatus represents every possible state of the calendar connection flow.
+// Using an enum instead of multiple booleans prevents impossible states —
+// the calendar can only be in ONE of these states at any given moment.
 enum CalendarStatus {
-  idle,
-  connecting,
-  fetchingTrips,
-  connected,
-  error,
-}
-
-// Lightweight model for pending trips in "Accept your trip" section
-class PendingTrip {
-  final String title;
-  final String dateRange;
-  final String location;
-
-  const PendingTrip({
-    required this.title,
-    required this.dateRange,
-    required this.location,
-  });
+  idle,          // default — nothing happening, button ready to tap
+  connecting,    // OAuth consent screen is open / user approving
+  fetchingTrips, // signed in successfully, now calling Calendar API
+  connected,     // trip found and parsed, ready to navigate
+  error,         // something failed — errorMessage will explain why
 }
 
 class HomeState {
   final String userName;
+  final String greeting;
+  final int rewardPoints;
 
-  // Stats in the blue header card — all 0 for new user
-  final double totalSpend;
-  final double manDaysSaved;
-  final double companySaved;
-  final double rewardsEarned;
-
-  // Calendar connection flow
+  // Single status field replaces the old isLoading + isCalendarConnected booleans
   final CalendarStatus calendarStatus;
-  final TripModel? fetchedTrip;
-  final String? errorMessage;
 
-  // Pending trips shown in "Accept your trip" section
-  final List<PendingTrip> pendingTrips;
+  // The trip parsed from the calendar event.
+  // null until calendarStatus == connected.
+  // Passed to the Alert Screen when navigation happens.
+  final TripModel? fetchedTrip;
+
+  // Shown in the error banner when calendarStatus == error
+  final String? errorMessage;
 
   const HomeState({
     this.userName = '',
-    this.totalSpend = 0,
-    this.manDaysSaved = 0,
-    this.companySaved = 0,
-    this.rewardsEarned = 0,
+    this.greeting = 'Good Morning',
+    this.rewardPoints = 0,
     this.calendarStatus = CalendarStatus.idle,
     this.fetchedTrip,
     this.errorMessage,
-    this.pendingTrips = const [],
   });
 
+  // Convenience getters make UI code more readable
   bool get isConnecting => calendarStatus == CalendarStatus.connecting;
   bool get isFetchingTrips => calendarStatus == CalendarStatus.fetchingTrips;
   bool get isCalendarLoading =>
@@ -58,6 +45,7 @@ class HomeState {
   bool get isCalendarConnected => calendarStatus == CalendarStatus.connected;
   bool get hasError => calendarStatus == CalendarStatus.error;
 
+  // Label shown inside the import button during loading states
   String get calendarButtonLabel {
     switch (calendarStatus) {
       case CalendarStatus.connecting:
@@ -73,21 +61,16 @@ class HomeState {
 
   HomeState copyWith({
     String? userName,
-    double? totalSpend,
-    double? manDaysSaved,
-    double? companySaved,
-    double? rewardsEarned,
+    String? greeting,
+    int? rewardPoints,
     CalendarStatus? calendarStatus,
     Object? fetchedTrip = _undefined,
     Object? errorMessage = _undefined,
-    List<PendingTrip>? pendingTrips,
   }) {
     return HomeState(
       userName: userName ?? this.userName,
-      totalSpend: totalSpend ?? this.totalSpend,
-      manDaysSaved: manDaysSaved ?? this.manDaysSaved,
-      companySaved: companySaved ?? this.companySaved,
-      rewardsEarned: rewardsEarned ?? this.rewardsEarned,
+      greeting: greeting ?? this.greeting,
+      rewardPoints: rewardPoints ?? this.rewardPoints,
       calendarStatus: calendarStatus ?? this.calendarStatus,
       fetchedTrip: fetchedTrip == _undefined
           ? this.fetchedTrip
@@ -95,7 +78,6 @@ class HomeState {
       errorMessage: errorMessage == _undefined
           ? this.errorMessage
           : errorMessage as String?,
-      pendingTrips: pendingTrips ?? this.pendingTrips,
     );
   }
 }

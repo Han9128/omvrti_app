@@ -22,6 +22,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:omvrti_app/core/constants/constants.dart';
 import 'package:omvrti_app/core/utils/formatters.dart';
@@ -31,6 +32,9 @@ import 'package:omvrti_app/features/autopilot/model/flight_model.dart';
 import 'package:omvrti_app/features/autopilot/model/trip_model.dart';
 import 'package:omvrti_app/features/autopilot/viewmodel/autopilot_viewmodel.dart';
 import 'package:omvrti_app/features/autopilot/viewmodel/flight_viewmodel.dart';
+
+
+
 
 class AutopilotFlightScreen extends ConsumerWidget {
   const AutopilotFlightScreen({super.key});
@@ -156,106 +160,121 @@ class AutopilotFlightScreen extends ConsumerWidget {
   //     ),
   //   );
   // }
-
   Widget _buildContent(
-  BuildContext context,
-  TripModel trip,
-  FlightModel flight,
-) {
-  return SingleChildScrollView(
-    physics: const BouncingScrollPhysics(),
-    child: Padding(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        children: [
-          // 🔵 BLUE SECTION (contains banner + flight card)
-Container(
-  width: double.infinity,
-  decoration: BoxDecoration(
-    gradient: LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [
-        AppColors.primary,                  // strong blue at top
-        AppColors.primary.withOpacity(0.85),
-        AppColors.pageBackground,           // fades into page background
-      ],
-      stops: const [0.0, 0.6, 1.0],
-    ),
-    borderRadius: const BorderRadius.only(
-      topLeft: Radius.circular(AppSpacing.xl),
-      topRight: Radius.circular(AppSpacing.xl),
-    ),
-  ),
-  child: Padding(
-    padding: const EdgeInsets.fromLTRB(
-      AppSpacing.lg,
-      AppSpacing.lg,
-      AppSpacing.lg,
-      0,
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    BuildContext context,
+    TripModel trip,
+    FlightModel flight,
+  ) {
+    return Stack(
       children: [
-        _buildBanner(),
-        const SizedBox(height: AppSpacing.lg),
-
-        Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(AppSpacing.xl),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
+        // ─────────────────────────────────────────────
+        // SCROLLABLE CONTENT
+        // ─────────────────────────────────────────────
+        SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            AppSpacing.lg,
+            AppSpacing.lg,
+            120, // 👈 IMPORTANT: space for button
           ),
           child: Column(
             children: [
-              _buildCombinedFlightCard(trip, flight),
-
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
-                  0,
-                  AppSpacing.lg,
-                  AppSpacing.lg,
+              const SizedBox(height: 32),
+              // 🔵 BLUE SECTION
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [AppColors.primary, AppColors.pageBackground],
+                    stops: const [0.0, 1.0],
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(AppSpacing.xl),
+                    topRight: Radius.circular(AppSpacing.xl),
+                  ),
                 ),
-                child: Column(
-                  children: [
-                    _buildPriceBlock(flight),
-                    const SizedBox(height: AppSpacing.sm),
-                    _buildRewardsBadge(flight),
-                  ],
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                    0,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildBanner(),
+                      const SizedBox(height: AppSpacing.lg),
+
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(AppSpacing.xl),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            _buildCombinedFlightCard(trip, flight),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                AppSpacing.lg,
+                                0,
+                                AppSpacing.lg,
+                                AppSpacing.lg,
+                              ),
+                              child: Column(
+                                children: [
+                                  _buildPriceBlock(flight),
+                                  const SizedBox(height: AppSpacing.sm),
+                                  _buildRewardsBadge(flight),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
+
+              const SizedBox(height: AppSpacing.lg),
             ],
           ),
         ),
-      ],
-    ),
-  ),
-),
-          const SizedBox(height: AppSpacing.lg),
 
-          // BUTTONS (outside blue section)
-          AppButtonRow(
-            outlinedText: 'Edit Flight',
-            filledText: 'View Hotel',
-            filledIcon: AppIcons.forward,
-            onOutlinedPressed: () {},
-            onFilledPressed: () {
-              context.push('/autopilot/hotel');
-            },
+        // ─────────────────────────────────────────────
+        // FIXED BOTTOM BUTTON
+        // ─────────────────────────────────────────────
+        Positioned(
+          left: AppSpacing.lg,
+          right: AppSpacing.lg,
+          bottom: 24,
+          child: SafeArea(
+            child: AppButtonRow(
+              outlinedText: 'Edit Flight',
+              filledText: 'View Hotel',
+              filledIcon: AppIcons.forward,
+              onOutlinedPressed: () {},
+              onFilledPressed: () {
+                context.push('/autopilot/hotel');
+              },
+            ),
           ),
-        ],
-      ),
-    ),
-  );
-}
+        ),
+      ],
+    );
+  }
 
   // ══════════════════════════════════════════════════════════════════════════
   // WIDGET: BANNER
@@ -269,27 +288,26 @@ Container(
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
         vertical: AppSpacing.md,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        // color: AppColors.primary,
         borderRadius: BorderRadius.circular(AppSpacing.lg),
       ),
       child: Row(
         children: [
           // White circle — "confirmed" check icon
           Container(
-            width: 44,
-            height: 44,
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 1.5),
             ),
             child: const Icon(
               Icons.check_rounded,
-              color: AppColors.primary,
-              size: 26,
+              color: Colors.white,
+              size: 20,
             ),
           ),
           const SizedBox(width: AppSpacing.md),
@@ -300,10 +318,10 @@ Container(
               children: [
                 Text(
                   'Auto Pilot Booking',
-                  style: AppTextStyles.h4.copyWith(
+                  style: AppTextStyles.h2.copyWith(
                     color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16,
+                    // fontWeight: FontWeight.w800,
+                    // fontSize: 16,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -349,7 +367,7 @@ Container(
         children: [
           // Departing flight section (takeoff icon)
           _buildFlightSection(
-            icon: Icons.flight_takeoff_rounded,
+            icon: AppIcons.flight_takeoff,
             label: 'Departing Flight',
             date: Formatters.formatDate(trip.departDate),
             departureTime: flight.departTime,
@@ -376,7 +394,7 @@ Container(
           // Returning flight section (landing icon)
           // NOTE: airports are SWAPPED for return — JFK departs, SFO arrives
           _buildFlightSection(
-            icon: Icons.flight_land_rounded,
+            icon: AppIcons.flight_landing,
             label: 'Returning Flight',
             date: Formatters.formatDate(trip.returnDate),
             departureTime: flight.returnTime,
@@ -412,7 +430,7 @@ Container(
   // Named parameters make the call sites at the bottom very readable.
 
   Widget _buildFlightSection({
-    required IconData icon, // flight takeoff or landing icon
+    required String icon, // flight takeoff or landing icon
     required String label, // "Departing Flight" or "Returning Flight"
     required String date, // formatted date string
     required String departureTime, // "8:30 AM"
@@ -434,7 +452,16 @@ Container(
           // e.g.  ✈  Departing Flight – Mon, Jun 1, 2026
           Row(
             children: [
-              Icon(icon, color: AppColors.textPrimary, size: 19),
+              // Icon(icon, color: AppColors.textPrimary, size: 19),
+              SvgPicture.asset(
+                icon, // 👈 your svg path
+                width: 19,
+                height: 19,
+                // colorFilter: ColorFilter.mode(
+                //   AppColors.textPrimary,
+                //   BlendMode.srcIn,
+                // ),
+              ),
               const SizedBox(width: AppSpacing.xs),
               Expanded(
                 child: Text(
@@ -506,33 +533,39 @@ Container(
 
           // ── ROW 4: Airline info row ─────────────────────────────────────
           // 🇺🇸 United  UA 435  [Avg emissions pill]
+          
           Row(
             children: [
-              // US flag — represents the airline's country
-              const Text('🇺🇸', style: TextStyle(fontSize: 14)),
+              Image.asset(
+                AppImages.united_logo,
+                width: 16,
+                height: 16,
+              ),
               const SizedBox(width: 5),
 
-              // Airline name — slightly bolder than flight number
-              Text(
-                airline,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w600,
+              Flexible(
+                child: Text(
+                  airline,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 5),
 
-              // Flight number — secondary/muted color
-              Text(
-                flightNumber,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
+              Flexible(
+                child: Text(
+                  flightNumber,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
 
-              // "Avg emissions" contextual badge
-              // Gray pill — shows environmental impact data in the real app
               _buildEmissionsPill(),
             ],
           ),
@@ -608,7 +641,7 @@ Container(
   Widget _buildPriceBlock(FlightModel flight) {
     // Green color constants — using a specific dark green for accessibility
     // The design uses a rich green, not the app's default success green
-    const Color policyGreen = Color(0xFF1B8A4A);
+    const Color policyGreen = AppColors.success;
     const Color policyGreenLight = Color(0xFFE8F5EE);
 
     return Align(
@@ -685,6 +718,8 @@ Container(
   // The text color is a dark amber to ensure readability on the light background.
 
   Widget _buildRewardsBadge(FlightModel flight) {
+    const Color policyGreen = AppColors.success;
+    const Color policyGreenLight = Color(0xFFE8F5EE);
     return Align(
       alignment: Alignment.centerRight,
       child: Container(
@@ -693,10 +728,10 @@ Container(
           vertical: AppSpacing.sm,
         ),
         decoration: BoxDecoration(
-          color: const Color(0xFFFFF8E1), // warm light yellow background
+          color: policyGreenLight, // warm light yellow background
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: const Color(0xFFFFB300), // gold border
+            color: policyGreen, // gold border
             width: 1.5,
           ),
         ),
@@ -704,18 +739,37 @@ Container(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Coin emoji — the "reward" symbol across the whole app
-            const Text('🪙', style: TextStyle(fontSize: 14)),
+            SvgPicture.asset(
+  AppIcons.omvrti_reward, // 👈 your file
+  width: 8,
+  height: 28,
+),
             const SizedBox(width: 5),
 
             // Amount + brand name in dark amber
-            Text(
-              '\$${flight.rewardsAmount.toStringAsFixed(0)} OmVrti Rewards',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: const Color(0xFF7B4F00), // dark amber — readable
-                fontWeight: FontWeight.w700,
-                fontSize: 12,
-              ),
-            ),
+            Row(
+  mainAxisSize: MainAxisSize.min,
+  crossAxisAlignment: CrossAxisAlignment.end,
+  children: [
+    Text(
+      '\$${flight.rewardsAmount.toStringAsFixed(0)}',
+      style: AppTextStyles.price.copyWith(
+        color: policyGreen,
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+    const SizedBox(width: 4),
+    Text(
+      'OmVrti Rewards',
+      style: AppTextStyles.bodySmall.copyWith(
+        color: policyGreen,
+        fontWeight: FontWeight.w700,
+        fontSize: 14,
+      ),
+    ),
+  ],
+),
           ],
         ),
       ),
