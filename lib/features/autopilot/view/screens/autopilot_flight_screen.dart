@@ -47,6 +47,7 @@ class AutopilotFlightScreen extends ConsumerWidget {
     return ColoredBox(
       color: AppColors.pageBackground,
       child: SafeArea(
+        top: false,
         child: Column(
           children: [
             // Back arrow — tapping returns to the Alert Screen
@@ -681,7 +682,7 @@ class AutopilotFlightScreen extends ConsumerWidget {
             ),
           ),
           // Very small gap between badge and price — matches design
-          const SizedBox(height: 2),
+          const SizedBox(height: AppSpacing.sm),
 
           // Large price — the dominant visual element in this block
           Text(
@@ -694,6 +695,8 @@ class AutopilotFlightScreen extends ConsumerWidget {
               height: 1.0, // tight line height so it doesn't add too much space
             ),
           ),
+
+          const SizedBox(height: AppSpacing.xs),
 
           // "round trip" label — small, secondary
           Text(

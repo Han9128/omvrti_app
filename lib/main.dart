@@ -10,16 +10,15 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   debugPaintSizeEnabled = false;
 
-  SystemChrome.setEnabledSystemUIMode(
-    SystemUiMode.manual,
-    overlays: SystemUiOverlay.values,
-  );
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
-      statusBarColor: Colors.white, // white background
-      statusBarIconBrightness: Brightness.dark, // dark icons on Android
-      statusBarBrightness: Brightness.light, // dark icons on iOS
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
 

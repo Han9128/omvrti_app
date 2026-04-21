@@ -20,6 +20,7 @@ class AutopilotAlertScreen extends ConsumerWidget {
     return ColoredBox(
       color: AppColors.pageBackground,
       child: SafeArea(
+        top: false,
         child: Column(
           children: [
             const OmvrtiAppBar(),
@@ -613,7 +614,9 @@ class AutopilotAlertScreen extends ConsumerWidget {
                 height: 20,
               ),
               const SizedBox(width: AppSpacing.sm),
-              Text(trip.travelerName, style: AppTextStyles.h4),
+              Text(trip.travelerName.isNotEmpty
+      ? trip.travelerName[0].toUpperCase() + trip.travelerName.substring(1)
+      : '', style: AppTextStyles.h4),
             ],
           ),
         ],

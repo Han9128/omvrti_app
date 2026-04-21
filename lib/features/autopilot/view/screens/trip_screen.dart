@@ -11,6 +11,7 @@ class TripScreen extends ConsumerWidget {
     return ColoredBox(
       color: AppColors.pageBackground,
       child: SafeArea(
+        top: false,
         bottom: false,
         child: Column(
           children: [

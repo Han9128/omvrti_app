@@ -11,8 +11,11 @@ import 'package:omvrti_app/core/widgets/main_shell.dart';
 import 'package:omvrti_app/features/auth/view/screens/signup_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/autopilot_alert_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/autopilot_flight_screen.dart';
+import 'package:omvrti_app/features/autopilot/view/screens/autopilot_hotel_screen.dart';
+import 'package:omvrti_app/features/autopilot/view/screens/car_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/notification_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/setting_screen.dart';
+import 'package:omvrti_app/features/autopilot/view/screens/summary_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/trip_screen.dart';
 import 'package:omvrti_app/features/auth/view/screens/login_screen.dart';
 import 'package:omvrti_app/features/home/view/home_screen.dart';
@@ -52,6 +55,26 @@ class AppRouter {
             name: 'autopilot-flight',
             builder: (context, state) => const AutopilotFlightScreen(),
           ),
+
+                    GoRoute(
+            path: '/autopilot/hotel',
+            name: 'autopilot-hotel',
+            builder: (context, state) => const AutopilotHotelScreen(),
+          ),
+
+          GoRoute(
+            path: '/autopilot/car',
+            name: 'autopilot-car',
+            builder: (context, state) => const AutopilotCarScreen(),
+          ),
+
+          GoRoute(
+            path: '/autopilot/summary',
+            name: 'autopilot-summary',
+            builder: (context, state) => const AutopilotSummaryScreen(),
+          ),
+
+
 
           GoRoute(
             path: '/trips',

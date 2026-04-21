@@ -120,9 +120,12 @@ class AppFilledButton extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          text,
-          style: AppTextStyles.button.copyWith(color: AppColors.textWhite),
+        Flexible(
+          child: Text(
+            text,
+            style: AppTextStyles.button.copyWith(color: AppColors.textWhite),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
         const SizedBox(width: AppSpacing.xs),
         Icon(icon, color: AppColors.textWhite, size: 20),

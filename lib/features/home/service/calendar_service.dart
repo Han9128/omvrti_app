@@ -309,7 +309,7 @@ class CalendarService {
       returnDate: returnDate,
       tripDuration: tripDuration > 0 ? tripDuration : 3,
 
-      travelerName: 'Mr. $travelerName',
+      travelerName: 'Mr. ${travelerName.isNotEmpty ? travelerName[0].toUpperCase() + travelerName.substring(1) : ''}',
 
       // Fallback values for fields not available from calendar events.
       // Shown on the Alert Screen so the user can review and edit before booking.

@@ -12,4 +12,7 @@ class AppImages {
   static const String login_trip_image = 'assets/images/login_trip_image.jpg';
   static const String login_cloud_image = 'assets/images/login_clouds.jpg';
   static const String united_logo = 'assets/images/united_logo_image.png';
+  static const String hotel = 'assets/images/hotel.png';
+  static const String car_hertz = 'assets/images/car.png';
+  static const String reward_badge = 'assets/images/reward_badge.png';
 }

@@ -37,6 +37,7 @@ Widget build(BuildContext context) {
     body: ColoredBox(
       color: AppColors.pageBackground,
       child: SafeArea(
+        top: false,
         bottom: false,
         child: Column(
           children: [
@@ -244,19 +245,21 @@ Widget build(BuildContext context) {
       child: Row(
         children: [
           // Medal icon
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF8E1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(
-              Icons.workspace_premium_rounded,
-              color: Color(0xFFFFB800),
-              size: 24,
-            ),
-          ),
+          // Container(
+          //   width: 40,
+          //   height: 40,
+          //   decoration: BoxDecoration(
+          //     color: const Color(0xFFFFF8E1),
+          //     borderRadius: BorderRadius.circular(10),
+          //   ),
+          //   child: const Icon(
+          //     Icons.workspace_premium_rounded,
+          //     color: Color(0xFFFFB800),
+          //     size: 24,
+          //   ),
+          // ),
+
+          Image.asset(AppImages.reward_badge, width: 32, height: 32),
           const SizedBox(width: AppSpacing.md),
 
           Expanded(
