@@ -5,6 +5,7 @@ enum CalendarStatus {
   connecting,
   fetchingTrips,
   connected,
+  noEvents, // connected but no travel events found
   error,
 }
 
@@ -56,6 +57,7 @@ class HomeState {
       calendarStatus == CalendarStatus.connecting ||
       calendarStatus == CalendarStatus.fetchingTrips;
   bool get isCalendarConnected => calendarStatus == CalendarStatus.connected;
+  bool get isNoEvents => calendarStatus == CalendarStatus.noEvents;
   bool get hasError => calendarStatus == CalendarStatus.error;
 
   String get calendarButtonLabel {

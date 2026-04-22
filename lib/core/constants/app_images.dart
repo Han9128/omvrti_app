@@ -15,4 +15,10 @@ class AppImages {
   static const String hotel = 'assets/images/hotel.png';
   static const String car_hertz = 'assets/images/car.png';
   static const String reward_badge = 'assets/images/reward_badge.png';
+
+  // ── Bottom Nav ────────────────────────────────────────────
+  static const String navHome = 'assets/images/home.png';
+  static const String navTrip = 'assets/images/trip.png';
+  static const String navReward = 'assets/images/bottom_nav_reward.png';
+  static const String navNotification = 'assets/images/notification.png';
 }

@@ -13,7 +13,9 @@ import 'package:omvrti_app/features/autopilot/view/screens/autopilot_alert_scree
 import 'package:omvrti_app/features/autopilot/view/screens/autopilot_flight_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/autopilot_hotel_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/car_screen.dart';
+import 'package:omvrti_app/features/autopilot/view/screens/manual_trip_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/notification_screen.dart';
+import 'package:omvrti_app/features/autopilot/view/screens/rewards_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/setting_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/summary_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/trip_screen.dart';
@@ -33,12 +35,23 @@ class AppRouter {
     initialLocation: '/login',
 
     routes: [
-      GoRoute(path: '/login', builder: (context,state) => const LoginScreen()),
-      GoRoute(path: '/signup', builder: (context,state)=> const SignupScreen()),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(
+        path: '/signup',
+        builder: (context, state) => const SignupScreen(),
+      ),
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
         routes: [
-          GoRoute(path: '/home', builder: (context,state) => const HomeScreen()),
+          GoRoute(
+            path: '/home',
+            builder: (context, state) => const HomeScreen(),
+          ),
+          GoRoute(
+            path: '/autopilot/manual-trip',
+            name: 'autopilot-manual-trip',
+            builder: (context, state) => const ManualTripScreen(),
+          ),
           GoRoute(
             path: '/autopilot/alert',
             // name is optional but useful — lets you navigate by name
@@ -56,7 +69,7 @@ class AppRouter {
             builder: (context, state) => const AutopilotFlightScreen(),
           ),
 
-                    GoRoute(
+          GoRoute(
             path: '/autopilot/hotel',
             name: 'autopilot-hotel',
             builder: (context, state) => const AutopilotHotelScreen(),
@@ -74,12 +87,15 @@ class AppRouter {
             builder: (context, state) => const AutopilotSummaryScreen(),
           ),
 
-
-
           GoRoute(
             path: '/trips',
             name: 'trips',
             builder: (context, state) => const TripScreen(),
+          ),
+          GoRoute(
+            path: '/rewards',
+            name: 'rewards',
+            builder: (context, state) => const RewardsScreen(),
           ),
           GoRoute(
             path: '/notifications',

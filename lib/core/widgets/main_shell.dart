@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../constants/constants.dart';
 
@@ -28,23 +29,19 @@ class MainShell extends StatelessWidget {
   Widget _buildBottomNav(BuildContext context) {
     final String currentPath = GoRouterState.of(context).matchedLocation;
     final int currentIndex = _pathToIndex(currentPath);
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.textMuted, width: 1)),
-      ),
 
+    return Container(
+      color: AppColors.surface,
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 60,
+          height: 68,
           child: Row(
             children: [
               _buildNavItem(
                 context: context,
                 index: 0,
-                icon: Icons.home_outlined,
-                activeIcon: Icons.home_rounded,
+                svgPath: AppImages.navHome,
                 label: 'Home',
                 path: '/home',
                 currentIndex: currentIndex,
@@ -52,28 +49,25 @@ class MainShell extends StatelessWidget {
               _buildNavItem(
                 context: context,
                 index: 1,
-                icon: Icons.flight_outlined,
-                activeIcon: Icons.flight_rounded,
-                label: 'Trips',
+                svgPath: AppImages.navTrip,
+                label: 'Trip Planner',
                 path: '/trips',
                 currentIndex: currentIndex,
               ),
               _buildNavItem(
                 context: context,
                 index: 2,
-                icon: Icons.notifications_outlined,
-                activeIcon: Icons.notifications_rounded,
-                label: 'Notifications',
-                path: '/notifications',
+                svgPath: AppImages.navReward,
+                label: 'Rewards',
+                path: '/rewards',
                 currentIndex: currentIndex,
               ),
               _buildNavItem(
                 context: context,
                 index: 3,
-                icon: Icons.settings_outlined,
-                activeIcon: Icons.settings_rounded,
-                label: 'Settings',
-                path: '/settings',
+                svgPath: AppImages.navNotification,
+                label: 'Notifications',
+                path: '/notifications',
                 currentIndex: currentIndex,
               ),
             ],
@@ -86,8 +80,7 @@ class MainShell extends StatelessWidget {
   Widget _buildNavItem({
     required BuildContext context,
     required int index,
-    required IconData icon,
-    required IconData activeIcon,
+    required String svgPath,
     required String label,
     required String path,
     required int currentIndex,
@@ -99,21 +92,59 @@ class MainShell extends StatelessWidget {
         onTap: () => context.go(path),
         behavior: HitTestBehavior.opaque,
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(
-              isActive ? activeIcon : icon,
-              color: isActive ? AppColors.accent : AppColors.textMuted,
+            // Blue top indicator — visible only for the active tab
+            Container(
+              height: 3,
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: isActive ? AppColors.primary : Colors.transparent,
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(3),
+                  bottomRight: Radius.circular(3),
+                ),
+              ),
             ),
 
-            const SizedBox(height: 3),
+            // Icon + label centered in remaining space
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Light blue pill background when active
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 5,
+                    ),
+                    decoration: isActive
+                        ? BoxDecoration(
+                            color: const Color(0xFFE8F0FF),
+                            borderRadius: BorderRadius.circular(20),
+                          )
+                        : null,
+                    child: Image.asset(
+                      svgPath,
+                      width: 28,
+                      height: 28,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
 
-            Text(
-              label,
-              style: AppTextStyles.bodySmall.copyWith(
-                fontSize: 11,
-                color: isActive ? AppColors.accent : AppColors.textMuted,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                  const SizedBox(height: 4),
+
+                  Text(
+                    label,
+                    maxLines: 1,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      fontSize: 10,
+                      color: isActive ? AppColors.primary : AppColors.textMuted,
+                      fontWeight:
+                          isActive ? FontWeight.w600 : FontWeight.w400,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -123,12 +154,11 @@ class MainShell extends StatelessWidget {
   }
 
   int _pathToIndex(String path) {
-    // All autopilot screens fall under Home tab (index 0)
-    // because Home IS the autopilot alert screen
     if (path.startsWith('/home')) return 0;
+    if (path.startsWith('/autopilot')) return 0;
     if (path.startsWith('/trips')) return 1;
-    if (path.startsWith('/notifications')) return 2;
-    if (path.startsWith('/settings')) return 3;
-    return 0; // default to Home
+    if (path.startsWith('/rewards')) return 2;
+    if (path.startsWith('/notifications')) return 3;
+    return 0;
   }
 }

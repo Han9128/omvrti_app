@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:omvrti_app/core/constants/constants.dart';
 import 'package:omvrti_app/features/home/model/home_state.dart';
 import 'package:omvrti_app/features/home/viewmodel/home_viewmodel.dart';
 
-// AddMeetingBottomSheet is shown when user taps "+ Add a Meeting"
-// on the home screen.
-//
-// It presents two options:
+// AddMeetingBottomSheet shows two options:
 //   1. Import from Google Calendar → triggers OAuth + fetch flow
-//   2. Add manually               → TODO: navigate to manual entry screen
+//   2. Add manually → dismisses sheet → navigates to ManualTripScreen
 //
-// The behaviour after selecting "Import from Google Calendar" is
-// exactly the same as the previous CalendarBottomSheet flow —
-// OAuth → fetch trip → write to selectedTripProvider → navigate to Alert Screen.
+// The calendar flow auto-closes the sheet when trip is fetched.
+// The manual flow closes the sheet first then pushes the form screen.
 
 class AddMeetingBottomSheet extends ConsumerWidget {
   const AddMeetingBottomSheet({super.key});
@@ -36,7 +33,7 @@ class AddMeetingBottomSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(homeProvider);
 
-    // Auto-close sheet when calendar trip is successfully fetched
+    // Auto-close when calendar trip is fetched — HomeScreen handles navigation
     ref.listen<HomeState>(homeProvider, (previous, next) {
       if (next.isCalendarConnected && context.mounted) {
         Navigator.of(context).pop();
@@ -71,7 +68,7 @@ class AddMeetingBottomSheet extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.xl),
 
-            // Title
+            // Title + subtitle
             Text(
               'Add a Trip',
               style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w800),
@@ -85,22 +82,26 @@ class AddMeetingBottomSheet extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.xl),
 
-            // Error banner — shown if calendar connection fails
+            // No-events message — friendly prompt to add manually
+            if (state.isNoEvents) ...[
+              _buildNoEventsMessage(context),
+              const SizedBox(height: AppSpacing.lg),
+            ],
+
+            // Error banner for genuine failures (auth, network, etc.)
             if (state.hasError && state.errorMessage != null) ...[
               _buildErrorBanner(state.errorMessage!),
               const SizedBox(height: AppSpacing.lg),
             ],
 
-            // Status message during loading
+            // Status message during calendar loading
             if (state.isCalendarLoading) ...[
               _buildStatusMessage(state),
               const SizedBox(height: AppSpacing.lg),
             ],
 
-            // Option 1: Import from Google Calendar
+            // ── Option 1: Import from Google Calendar ────────────────
             _buildOptionTile(
-              context: context,
-              ref: ref,
               icon: Icons.calendar_month_outlined,
               iconBgColor: const Color(0xFFEEF2FF),
               iconColor: const Color(0xFF1A3C8F),
@@ -110,7 +111,7 @@ class AddMeetingBottomSheet extends ConsumerWidget {
               onTap: state.isCalendarLoading
                   ? null
                   : () {
-                      if (state.hasError) {
+                      if (state.hasError || state.isNoEvents) {
                         ref.read(homeProvider.notifier).resetCalendarError();
                       }
                       ref
@@ -120,10 +121,10 @@ class AddMeetingBottomSheet extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.md),
 
-            // Option 2: Add manually
+            // ── Option 2: Add manually ───────────────────────────────
+            // Closes the bottom sheet first, then pushes the form screen.
+            // We close first so the sheet doesn't linger behind the form.
             _buildOptionTile(
-              context: context,
-              ref: ref,
               icon: Icons.edit_outlined,
               iconBgColor: const Color(0xFFFFF0EE),
               iconColor: AppColors.accent,
@@ -131,8 +132,11 @@ class AddMeetingBottomSheet extends ConsumerWidget {
               subtitle: 'Enter your trip details yourself',
               isLoading: false,
               onTap: () {
+                // Close the bottom sheet
                 Navigator.of(context).pop();
-                // TODO: Navigate to manual trip entry screen when built
+                // Navigate to the manual trip entry form
+                // Using push so user can come back to Home with back arrow
+                context.push('/autopilot/manual-trip');
               },
             ),
 
@@ -161,10 +165,7 @@ class AddMeetingBottomSheet extends ConsumerWidget {
     );
   }
 
-  // Each option tile — icon + title + subtitle + loading state
   Widget _buildOptionTile({
-    required BuildContext context,
-    required WidgetRef ref,
     required IconData icon,
     required Color iconBgColor,
     required Color iconColor,
@@ -188,7 +189,6 @@ class AddMeetingBottomSheet extends ConsumerWidget {
         ),
         child: Row(
           children: [
-            // Icon tile
             Container(
               width: 44,
               height: 44,
@@ -207,7 +207,6 @@ class AddMeetingBottomSheet extends ConsumerWidget {
                   : Icon(icon, color: iconColor, size: 22),
             ),
             const SizedBox(width: AppSpacing.md),
-
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,7 +228,6 @@ class AddMeetingBottomSheet extends ConsumerWidget {
                 ],
               ),
             ),
-
             const Icon(
               Icons.chevron_right,
               color: AppColors.textMuted,
@@ -271,6 +269,74 @@ class AddMeetingBottomSheet extends ConsumerWidget {
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.primary,
               fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoEventsMessage(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF8EC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFFB800).withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.calendar_today_outlined,
+                color: Color(0xFF9B6D00),
+                size: 18,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  'No events found in your calendar',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: const Color(0xFF9B6D00),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Your Google Calendar doesn\'t have any upcoming travel events. You can add your trip details manually instead.',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: const Color(0xFF9B6D00),
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).pop();
+              context.push('/autopilot/manual-trip');
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.sm,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFB800),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                'Add trip manually',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
         ],

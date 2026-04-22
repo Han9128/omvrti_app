@@ -75,8 +75,11 @@ class HomeNotifier extends Notifier<HomeState> {
         fetchedTrip: result.trip,
       );
     } else if (result is CalendarFailure) {
+      final isNoEvents = result.message.contains('No upcoming events') ||
+          result.message.contains('No travel events');
       state = state.copyWith(
-        calendarStatus: CalendarStatus.error,
+        calendarStatus:
+            isNoEvents ? CalendarStatus.noEvents : CalendarStatus.error,
         errorMessage: result.message,
       );
     }

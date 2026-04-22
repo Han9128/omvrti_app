@@ -9,6 +9,12 @@ class AppIcons {
   static const IconData back = Icons.chevron_left;
   static const IconData close = Icons.close;
 
+  // ── Bottom Nav ────────────────────────────────────────────
+  static const String navHome = 'assets/icons/home.svg';
+  static const String navTrip = 'assets/icons/trip.svg';
+  static const String navReward = 'assets/icons/bottom_nav_reward.svg';
+  static const String navNotification = 'assets/icons/notification.svg';
+
   // ── AutoPilot ─────────────────────────────────────────────
   static const dollar = 'assets/icons/dollar.svg';
   static const String profileIcon = 'assets/icons/profile_icon.svg';
