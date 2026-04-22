@@ -1,0 +1,1 @@
+ C:\\Users\\TG-83\\projects\\omvrti_app\\.dart_tool\\flutter_build\\885055100d4a01e8ebc1fac231d09e66\\native_assets.json: 

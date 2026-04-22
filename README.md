@@ -1,1 +1,0 @@
-# omvrti_app
