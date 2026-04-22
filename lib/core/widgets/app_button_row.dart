@@ -41,7 +41,7 @@ class AppButtonRow extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(width: 100),
+        const SizedBox(width: 64),
 
         Expanded(
           // flex: 1,
