@@ -72,7 +72,7 @@ class AutopilotAlertScreen extends ConsumerWidget {
             filledText: 'View Flight',
             filledIcon: AppIcons.forward,
             onOutlinedPressed: () {
-              // TODO: navigate to edit trip
+              context.push('/autopilot/manual-trip', extra: trip);
             },
             onFilledPressed: () {
               // context.go() is go_router's navigation method

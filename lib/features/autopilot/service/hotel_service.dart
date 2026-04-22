@@ -17,7 +17,11 @@ class HotelService {
   ///
   /// [Future] tells Dart: "this will give you a value later, not right now."
   /// The caller (provider) awaits this and handles loading/error states.
-  Future<HotelModel> fetchHotel() async {
+  Future<HotelModel> fetchHotel({
+    required DateTime checkInDate,
+    required DateTime checkOutDate,
+    required String destinationCity,
+  }) async {
     // Simulate a network request delay (2 seconds).
     // Remove this line when connecting to a real API.
     await Future.delayed(const Duration(seconds: 2));
@@ -27,9 +31,9 @@ class HotelService {
     // Replace this return statement with an HTTP GET + JSON parsing
     // when the backend is ready.
     return HotelModel(
-      destinationCity: 'New York',
+      destinationCity: destinationCity,
       hotelName: 'Residence Inn Marriott',
-      hotelArea: 'New York Downtown',
+      hotelArea: '$destinationCity Downtown',
       hotelSubArea: 'Manhattan/WTC Area',
 
       // Local asset — swap to imageUrl: 'https://...' for network images
@@ -38,12 +42,10 @@ class HotelService {
       pricePerNight: 275.0,
       rewardsAmount: 10.0,
 
-      // Check-in: Tue, Jun 1, 2026 at 12 PM
-      checkInDate: DateTime(2026, 6, 1),
+      checkInDate: checkInDate,
       checkInTime: '12 PM',
 
-      // Check-out: Fri, Jun 5, 2026 at 11 AM
-      checkOutDate: DateTime(2026, 6, 5),
+      checkOutDate: checkOutDate,
       checkOutTime: '11 AM',
 
       // Amenity list — each entry renders as one icon + label row.

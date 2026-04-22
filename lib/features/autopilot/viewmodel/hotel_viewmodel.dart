@@ -19,6 +19,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:omvrti_app/features/autopilot/model/hotel_model.dart';
 import 'package:omvrti_app/features/autopilot/service/hotel_service.dart';
+import 'package:omvrti_app/features/autopilot/viewmodel/autopilot_viewmodel.dart';
 
 /// Provides a singleton instance of HotelService.
 /// Any provider that needs hotel data reads this first.
@@ -36,7 +37,11 @@ final hotelServiceProvider = Provider<HotelService>((ref) {
 ///   interactions mutate the hotel state. FutureProvider is the
 ///   correct, simpler choice for read-only async data.
 final hotelProvider = FutureProvider<HotelModel>((ref) async {
-  // ref.watch ensures this provider re-fetches if hotelServiceProvider changes.
+  final trip = await ref.watch(tripProvider.future);
   final service = ref.watch(hotelServiceProvider);
-  return await service.fetchHotel();
+  return service.fetchHotel(
+    checkInDate: trip.departDate,
+    checkOutDate: trip.returnDate,
+    destinationCity: trip.destCity,
+  );
 });

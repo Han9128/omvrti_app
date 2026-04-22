@@ -8,6 +8,7 @@
 
 import 'package:go_router/go_router.dart';
 import 'package:omvrti_app/core/widgets/main_shell.dart';
+import 'package:omvrti_app/features/autopilot/model/trip_model.dart';
 import 'package:omvrti_app/features/auth/view/screens/signup_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/autopilot_alert_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/autopilot_flight_screen.dart';
@@ -50,7 +51,9 @@ class AppRouter {
           GoRoute(
             path: '/autopilot/manual-trip',
             name: 'autopilot-manual-trip',
-            builder: (context, state) => const ManualTripScreen(),
+            builder: (context, state) => ManualTripScreen(
+              initialTrip: state.extra as TripModel?,
+            ),
           ),
           GoRoute(
             path: '/autopilot/alert',

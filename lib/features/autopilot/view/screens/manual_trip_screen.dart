@@ -21,7 +21,9 @@ import 'package:omvrti_app/features/autopilot/viewmodel/autopilot_viewmodel.dart
 //   - Form sections can collapse/expand (optional sections)
 
 class ManualTripScreen extends ConsumerStatefulWidget {
-  const ManualTripScreen({super.key});
+  final TripModel? initialTrip;
+
+  const ManualTripScreen({super.key, this.initialTrip});
 
   @override
   ConsumerState<ManualTripScreen> createState() => _ManualTripScreenState();
@@ -57,6 +59,41 @@ class _ManualTripScreenState extends ConsumerState<ManualTripScreen> {
   bool _showServicesSection = false;
 
   bool _isSubmitting = false;
+
+  bool get _isEditMode => widget.initialTrip != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final trip = widget.initialTrip;
+    if (trip == null) return;
+
+    _purposeController.text = trip.purpose;
+    _companyController.text = trip.company;
+    _originCityController.text = trip.originCity;
+    _originStateController.text = trip.originState;
+    _destCityController.text = trip.destCity;
+    _destStateController.text = trip.destState;
+    _travelerNameController.text = trip.travelerName;
+    _budgetController.text = trip.estimatedBudget == trip.estimatedBudget.truncateToDouble()
+        ? trip.estimatedBudget.toInt().toString()
+        : trip.estimatedBudget.toString();
+    _departDate = trip.departDate;
+    _returnDate = trip.returnDate;
+
+    if (trip.firstMeeting != null || trip.lastMeeting != null || trip.meetingLocation != null) {
+      _showMeetingSection = true;
+      _firstMeetingController.text = trip.firstMeeting ?? '';
+      _lastMeetingController.text = trip.lastMeeting ?? '';
+      _meetingLocationController.text = trip.meetingLocation ?? '';
+    }
+
+    if (trip.accommodationNote != null || trip.carRentalNote != null) {
+      _showServicesSection = true;
+      _accommodationController.text = trip.accommodationNote ?? '';
+      _carRentalController.text = trip.carRentalNote ?? '';
+    }
+  }
 
   @override
   void dispose() {
@@ -233,14 +270,16 @@ class _ManualTripScreenState extends ConsumerState<ManualTripScreen> {
                     children: [
                       // Page title + subtitle
                       Text(
-                        'Add Trip Manually',
+                        _isEditMode ? 'Edit Trip' : 'Add Trip Manually',
                         style: AppTextStyles.h2.copyWith(
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Fill in your trip details below.',
+                        _isEditMode
+                            ? 'Update your trip details below.'
+                            : 'Fill in your trip details below.',
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -478,7 +517,7 @@ class _ManualTripScreenState extends ConsumerState<ManualTripScreen> {
 
                       // ── Submit button ────────────────────────────────
                       AppFilledButton(
-                        text: 'Continue to Trip Review',
+                        text: _isEditMode ? 'Update Trip' : 'Continue to Trip Review',
                         icon: AppIcons.forward,
                         isLoading: _isSubmitting,
                         onPressed: _isSubmitting ? null : _handleSubmit,
