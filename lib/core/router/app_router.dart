@@ -16,11 +16,13 @@ import 'package:omvrti_app/features/autopilot/view/screens/autopilot_hotel_scree
 import 'package:omvrti_app/features/autopilot/view/screens/car_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/manual_trip_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/notification_screen.dart';
+import 'package:omvrti_app/features/autopilot/view/screens/payment_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/rewards_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/setting_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/summary_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/trip_screen.dart';
 import 'package:omvrti_app/features/auth/view/screens/login_screen.dart';
+import 'package:omvrti_app/features/calendar/view/screens/calendar_integration_screen.dart';
 import 'package:omvrti_app/features/home/view/home_screen.dart';
 
 class AppRouter {
@@ -51,9 +53,8 @@ class AppRouter {
           GoRoute(
             path: '/autopilot/manual-trip',
             name: 'autopilot-manual-trip',
-            builder: (context, state) => ManualTripScreen(
-              initialTrip: state.extra as TripModel?,
-            ),
+            builder: (context, state) =>
+                ManualTripScreen(initialTrip: state.extra as TripModel?),
           ),
           GoRoute(
             path: '/autopilot/alert',
@@ -88,6 +89,17 @@ class AppRouter {
             path: '/autopilot/summary',
             name: 'autopilot-summary',
             builder: (context, state) => const AutopilotSummaryScreen(),
+          ),
+
+          GoRoute(
+            path: '/autopilot/payment',
+            name: 'autopilot-payment',
+            builder: (context, state) => const PaymentScreen(),
+          ),
+
+          GoRoute(
+            path: '/calendar',
+            builder: (context, state) => const CalendarIntegrationScreen(),
           ),
 
           GoRoute(

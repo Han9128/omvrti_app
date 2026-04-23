@@ -41,11 +41,18 @@ dependencies:
   google_sign_in: ^6.2.1
   googleapis: ^13.2.0
   http: ^1.2.0
+  local_auth: ^2.3.0
 
 dev_dependencies:
   flutter_native_splash: ^2.4.0
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/app_logo.png"
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -73,6 +80,7 @@ flutter:
   assets:
   - assets/images/
   - assets/icons/
+  - assets/images/calendar/
 
   fonts:
     - family: PlusJakartaSans

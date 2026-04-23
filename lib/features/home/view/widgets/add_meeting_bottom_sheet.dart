@@ -107,17 +107,11 @@ class AddMeetingBottomSheet extends ConsumerWidget {
               iconColor: const Color(0xFF1A3C8F),
               title: 'Import from Google Calendar',
               subtitle: 'Connect and sync your travel events automatically',
-              isLoading: state.isCalendarLoading,
-              onTap: state.isCalendarLoading
-                  ? null
-                  : () {
-                      if (state.hasError || state.isNoEvents) {
-                        ref.read(homeProvider.notifier).resetCalendarError();
-                      }
-                      ref
-                          .read(homeProvider.notifier)
-                          .connectAndFetchCalendar();
-                    },
+              isLoading: false,
+              onTap: () {
+                Navigator.of(context).pop();
+                context.push('/calendar');
+              },
             ),
             const SizedBox(height: AppSpacing.md),
 

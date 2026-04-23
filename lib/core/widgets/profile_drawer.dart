@@ -90,9 +90,9 @@ class ProfileDrawer extends StatelessWidget {
           route: '/notifications',
         ),
         _ProfileMenuItem(
-          icon: Icons.phone_iphone_outlined,
-          label: 'App',
-          route: null,
+          icon: Icons.calendar_month_outlined,
+          label: 'Apps',
+          route: '/calendar',
         ),
         _ProfileMenuItem(
           icon: Icons.link_outlined,

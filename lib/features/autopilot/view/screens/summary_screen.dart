@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:omvrti_app/core/constants/constants.dart';
+import 'package:omvrti_app/core/widgets/app_button_row.dart';
 import 'package:omvrti_app/core/widgets/omvrti_app_bar.dart';
 import 'package:omvrti_app/features/autopilot/model/summary_model.dart';
 import 'package:omvrti_app/features/autopilot/viewmodel/summary_viewmodel.dart';
@@ -129,71 +130,91 @@ class AutopilotSummaryScreen extends ConsumerWidget {
         ),
 
         // ── FIXED BOTTOM BUTTONS ──────────────────────────────────────────
-        Positioned(
+        // Positioned(
+        //   left: AppSpacing.lg,
+        //   right: AppSpacing.lg,
+        //   bottom: 24,
+        //   child: SafeArea(
+        //     child: Row(
+        //       children: [
+        //         Expanded(
+        //           child: OutlinedButton(
+        //             onPressed: () => context.pop(),
+        //             style: OutlinedButton.styleFrom(
+        //               side: const BorderSide(
+        //                 color: AppColors.accent,
+        //                 width: 1.5,
+        //               ),
+        //               shape: RoundedRectangleBorder(
+        //                 borderRadius: BorderRadius.circular(AppSpacing.lg),
+        //               ),
+        //               padding: const EdgeInsets.symmetric(vertical: 14),
+        //               backgroundColor: Colors.white,
+        //             ),
+        //             child: Text(
+        //               'Edit Trip',
+        //               style: AppTextStyles.button.copyWith(
+        //                 color: AppColors.accent,
+        //               ),
+        //             ),
+        //           ),
+        //         ),
+        //         const SizedBox(width: AppSpacing.lg),
+        //         Expanded(
+        //           child: ElevatedButton(
+        //             onPressed: () {},
+        //             style: ElevatedButton.styleFrom(
+        //               backgroundColor: AppColors.accent,
+        //               foregroundColor: Colors.white,
+        //               elevation: 0,
+        //               shape: RoundedRectangleBorder(
+        //                 borderRadius: BorderRadius.circular(AppSpacing.lg),
+        //               ),
+        //               padding: const EdgeInsets.symmetric(vertical: 14),
+        //             ),
+        //             child: Row(
+        //               mainAxisAlignment: MainAxisAlignment.center,
+        //               children: [
+        //                 Flexible(
+        //                   child: Text(
+        //                     'Proceed To Pay',
+        //                     style: AppTextStyles.button.copyWith(
+        //                       color: Colors.white,
+        //                     ),
+        //                     overflow: TextOverflow.ellipsis,
+        //                   ),
+        //                 ),
+        //                 const SizedBox(width: 4),
+        //                 const Icon(
+        //                   Icons.chevron_right,
+        //                   color: Colors.white,
+        //                   size: 20,
+        //                 ),
+        //               ],
+        //             ),
+        //           ),
+        //         ),
+        //       ],
+        //     ),
+        //   ),
+        // ),
+
+                Positioned(
           left: AppSpacing.lg,
           right: AppSpacing.lg,
           bottom: 24,
           child: SafeArea(
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => context.pop(),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(
-                        color: AppColors.accent,
-                        width: 1.5,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppSpacing.lg),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      backgroundColor: Colors.white,
-                    ),
-                    child: Text(
-                      'Edit Trip',
-                      style: AppTextStyles.button.copyWith(
-                        color: AppColors.accent,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.lg),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.accent,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppSpacing.lg),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            'Proceed To Pay',
-                            style: AppTextStyles.button.copyWith(
-                              color: Colors.white,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        const Icon(
-                          Icons.chevron_right,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+            child: AppButtonRow(
+              outlinedText: 'Edit Trip',
+              filledText: 'Checkout',
+              filledIcon: AppIcons.forward,
+              onOutlinedPressed: () {
+                // TODO: Navigate to co-pilot flight page
+              },
+              onFilledPressed: () {
+                // Confirm booking → navigate to payment screen
+                context.push('/autopilot/payment');
+              },
             ),
           ),
         ),

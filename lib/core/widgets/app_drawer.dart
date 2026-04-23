@@ -594,6 +594,16 @@ class AppDrawer extends StatelessWidget {
       ],
     ),
     _MenuSection(
+      title: 'Apps',
+      items: [
+        _MenuItem(
+          icon: Icons.calendar_month_outlined,
+          label: 'Calendar',
+          route: '/calendar',
+        ),
+      ],
+    ),
+    _MenuSection(
       title: 'Support',
       items: [
         _MenuItem(
