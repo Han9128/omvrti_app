@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:omvrti_app/core/services/biometric_service.dart';
 import 'package:omvrti_app/features/auth/model/auth_state.dart';
 import 'package:omvrti_app/features/auth/service/auth_service.dart';
 
@@ -48,15 +49,10 @@ class AuthNotifier extends Notifier<AuthState> {
     );
 
     if (result is AuthSuccess) {
-      state = state.copyWith(
-        isLoading: false,
-        isAuthenticated: true,
-      );
+      await ref.read(biometricServiceProvider).saveSession();
+      state = state.copyWith(isLoading: false, isAuthenticated: true);
     } else if (result is AuthFailure) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: result.message,
-      );
+      state = state.copyWith(isLoading: false, errorMessage: result.message);
     }
   }
 
@@ -93,5 +89,10 @@ class AuthNotifier extends Notifier<AuthState> {
 
   void clearError() {
     state = state.copyWith(errorMessage: null);
+  }
+
+  Future<void> logout() async {
+    await ref.read(biometricServiceProvider).clearSession();
+    state = const AuthState();
   }
 }

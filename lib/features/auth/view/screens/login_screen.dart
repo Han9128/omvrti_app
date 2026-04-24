@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:omvrti_app/core/constants/constants.dart';
+import 'package:omvrti_app/core/services/biometric_service.dart';
 import 'package:omvrti_app/features/auth/model/auth_state.dart';
 import 'package:omvrti_app/features/auth/viewmodel/auth_viewmodel.dart';
 
@@ -19,16 +20,140 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _isPasswordHidden = true;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkExistingSession());
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  void _handleAuthStateChange(AuthState? previous, AuthState next) {
-    if (next.isAuthenticated) {
+  // Runs once on screen load — mirrors WhatsApp's startup auth check.
+  Future<void> _checkExistingSession() async {
+    if (!mounted) return;
+    final service = ref.read(biometricServiceProvider);
+    final hasSession = await service.hasActiveSession();
+    if (!mounted || !hasSession) return;
+
+    final biometricEnabled = await service.isBiometricLoginEnabled();
+    if (!mounted) return;
+
+    if (biometricEnabled) {
+      // Session exists + biometric enabled → auto-show scanner (no form needed)
+      final success = await service.authenticateUser(
+        reason: 'Sign in to OmVrti.ai',
+      );
+      if (success && mounted) context.go('/home');
+    } else {
+      // Session exists, no biometric → skip the form entirely
       context.go('/home');
     }
+  }
+
+  // Only navigate when isAuthenticated flips false → true (fresh login).
+  // Guarding against previous state prevents clearError() from re-triggering
+  // navigation when the user was already authenticated.
+  void _handleAuthStateChange(AuthState? previous, AuthState next) {
+    if (next.isAuthenticated && !(previous?.isAuthenticated ?? false)) {
+      _onLoginSuccess();
+    }
+  }
+
+  Future<void> _onLoginSuccess() async {
+    final service = ref.read(biometricServiceProvider);
+    final supported = await service.isDeviceSupported();
+    final alreadyEnabled = await service.isBiometricLoginEnabled();
+
+    // Show prompt if the device has biometric hardware and user hasn't opted in yet.
+    // We check hardware support (not enrollment) so the prompt shows even if
+    // the user hasn't enrolled fingerprints yet — they can do so after enabling.
+    if (supported && !alreadyEnabled && mounted) {
+      await _showEnableBiometricPrompt(service);
+    }
+
+    if (mounted) context.go('/home');
+  }
+
+  Future<void> _showEnableBiometricPrompt(BiometricService service) async {
+    final label = await service.getBiometricLabel();
+    if (!mounted) return;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      backgroundColor: AppColors.surface,
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40, height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.textMuted.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Icon(Icons.fingerprint, size: 48, color: AppColors.primary),
+            const SizedBox(height: 16),
+            Text(
+              'Enable $label Login?',
+              style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w800),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Skip the password next time — sign in instantly using $label.',
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 28),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: () async {
+                  await service.enableBiometricLogin();
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accent,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+                child: Text(
+                  'Enable $label',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: () => Navigator.pop(ctx),
+              child: Text(
+                'Not now',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _handleSignIn() {
@@ -200,6 +325,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       ),
                               ),
                             ),
+
                           ],
                         ),
                       ),

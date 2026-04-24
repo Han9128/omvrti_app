@@ -29,8 +29,10 @@
 //   └─────────────────────────────┘
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:omvrti_app/core/constants/constants.dart';
+import 'package:omvrti_app/features/auth/viewmodel/auth_viewmodel.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DATA MODELS
@@ -55,7 +57,7 @@ class _ProfileMenuItem {
 // PROFILE DRAWER WIDGET
 // ─────────────────────────────────────────────────────────────────────────────
 
-class ProfileDrawer extends StatelessWidget {
+class ProfileDrawer extends ConsumerWidget {
   final String userName;
   final String userEmail;
   final String? userAvatar;
@@ -112,7 +114,7 @@ class ProfileDrawer extends StatelessWidget {
       ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final menuItems = _getMenuItems();
 
     return Drawer(
@@ -159,7 +161,7 @@ class ProfileDrawer extends StatelessWidget {
                   children: [
                     // Regular menu items
                     for (final item in menuItems)
-                      _buildMenuItem(context, item),
+                      _buildMenuItem(context, ref, item),
 
                     const SizedBox(height: AppSpacing.lg),
 
@@ -174,6 +176,7 @@ class ProfileDrawer extends StatelessWidget {
                     // Logout item
                     _buildMenuItem(
                       context,
+                      ref,
                       const _ProfileMenuItem(
                         icon: Icons.logout_outlined,
                         label: 'Logout',
@@ -269,10 +272,10 @@ class ProfileDrawer extends StatelessWidget {
   }
 
   // ── Menu Item ──────────────────────────────────────────────────────────────
-  Widget _buildMenuItem(BuildContext context, _ProfileMenuItem item) {
+  Widget _buildMenuItem(BuildContext context, WidgetRef ref, _ProfileMenuItem item) {
     return InkWell(
       onTap: item.isLogout
-          ? () => _handleLogout(context)
+          ? () => _handleLogout(context, ref)
           : (item.route != null
               ? () => _handleItemTap(context, item.route!)
               : null),
@@ -328,20 +331,20 @@ class ProfileDrawer extends StatelessWidget {
   }
 
   // ── Logout Handler ────────────────────────────────────────────────────────
-  void _handleLogout(BuildContext context) {
+  void _handleLogout(BuildContext context, WidgetRef ref) {
     Navigator.pop(context);
 
     Future.delayed(const Duration(milliseconds: 200), () {
       if (context.mounted) {
-        _showLogoutDialog(context);
+        _showLogoutDialog(context, ref);
       }
     });
   }
 
-  void _showLogoutDialog(BuildContext context) {
+  void _showLogoutDialog(BuildContext outerContext, WidgetRef ref) {
     showDialog(
-      context: context,
-      builder: (BuildContext context) {
+      context: outerContext,
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -358,7 +361,7 @@ class ProfileDrawer extends StatelessWidget {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: Text(
                 'Cancel',
                 style: AppTextStyles.bodyMedium.copyWith(
@@ -368,10 +371,10 @@ class ProfileDrawer extends StatelessWidget {
               ),
             ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                // Navigate to login screen
-                context.go('/login');
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                await ref.read(authProvider.notifier).logout();
+                if (outerContext.mounted) outerContext.go('/login');
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.error,

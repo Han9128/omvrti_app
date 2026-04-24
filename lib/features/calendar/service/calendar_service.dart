@@ -101,6 +101,7 @@ class CalendarService {
       // response.statusCode gives us the HTTP status as an integer.
 
       if (response.statusCode != 200) {
+        print("❌ HTTP ERROR: ${response.statusCode}"); // Log the error status
         throw Exception(
           'Server returned ${response.statusCode}. '
           'Please try again later.',
@@ -112,6 +113,7 @@ class CalendarService {
       // response.body is a String — the raw JSON text.
       // jsonDecode() converts it to a Map<String, dynamic>.
       // We then pass it to our CalendarApiResponse factory constructor.
+
 
       final Map<String, dynamic> jsonBody =
           jsonDecode(response.body) as Map<String, dynamic>;

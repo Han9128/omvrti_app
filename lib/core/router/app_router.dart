@@ -24,6 +24,8 @@ import 'package:omvrti_app/features/autopilot/view/screens/trip_screen.dart';
 import 'package:omvrti_app/features/auth/view/screens/login_screen.dart';
 import 'package:omvrti_app/features/calendar/view/screens/calendar_integration_screen.dart';
 import 'package:omvrti_app/features/home/view/home_screen.dart';
+import 'package:omvrti_app/features/payment/model/payment_result.dart';
+import 'package:omvrti_app/features/payment/view/screens/booking_confirmed_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -96,6 +98,13 @@ class AppRouter {
             name: 'autopilot-payment',
             builder: (context, state) => const PaymentScreen(),
           ),
+
+          GoRoute(
+  path: '/payment/confirmed',
+  builder: (context, state) => BookingConfirmedScreen(
+    paymentResult: state.extra as PaymentResult,
+  ),
+),
 
           GoRoute(
             path: '/calendar',

@@ -108,4 +108,29 @@ class TripModel {
     this.accommodationNote,
     this.carRentalNote,
   });
+
+  factory TripModel.fromJson(Map<String, dynamic> json) {
+    return TripModel(
+      purpose: json['purpose'] as String? ?? 'Business Trip',
+      company: json['company'] as String? ?? 'Company',
+      estimatedBudget: (json['estimatedBudget'] as num?)?.toDouble() ?? 2500.0,
+      originCity: json['originCity'] as String? ?? 'San Francisco',
+      originState: json['originState'] as String? ?? 'CA, United States',
+      originAirport: json['originAirport'] as String? ?? 'SFO',
+      destCity: json['destCity'] as String? ?? 'New York',
+      destState: json['destState'] as String? ?? 'NY, United States',
+      destAirport: json['destAirport'] as String? ?? 'JFK',
+      departDate: DateTime.parse(json['departDate'] as String),
+      returnDate: DateTime.parse(json['returnDate'] as String),
+      tripDuration: json['tripDuration'] as int? ?? 3,
+      travelerName: json['travelerName'] as String? ?? 'Traveler',
+      firstMeeting: json['firstMeeting'] as String?,
+      lastMeeting: json['lastMeeting'] as String?,
+      meetingLocation: json['meetingLocation'] as String?,
+      departTime: json['departTime'] as String?,
+      returnTime: json['returnTime'] as String?,
+      accommodationNote: json['accommodationNote'] as String?,
+      carRentalNote: json['carRentalNote'] as String?,
+    );
+  }
 }
