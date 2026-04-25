@@ -55,8 +55,7 @@ class _CalendarIntegrationScreenState
       googleCalendarConnectionProvider,
       (previous, next) {
         if (next.isSuccess && context.mounted) {
-          ref.read(googleCalendarConnectionProvider.notifier).reset();
-          context.go('/autopilot/alert');
+          context.go('/calendar/connected');
         } else if (next.isError && context.mounted) {
           final msg = next.errorMessage ?? 'Connection failed. Please try again.';
           ScaffoldMessenger.of(context).showSnackBar(

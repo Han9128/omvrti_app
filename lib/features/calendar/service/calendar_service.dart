@@ -23,9 +23,12 @@
 //     http: ^1.2.1
 //   Then run: flutter pub get
 
-import 'dart:convert';          // for jsonDecode()
-import 'package:http/http.dart' as http; // HTTP client
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+import 'package:omvrti_app/features/calendar/model/calendar_event_model.dart';
 import 'package:omvrti_app/features/calendar/model/calendar_vendor_model.dart';
+import 'package:omvrti_app/features/calendar/model/sub_calendar_model.dart';
 
 class CalendarService {
   // ── Base URL ────────────────────────────────────────────────────────────────
@@ -49,8 +52,10 @@ class CalendarService {
   static const String _baseUrl = 'http://192.168.64.153:8080'; // Android emulator
   // static const String _baseUrl = 'http://localhost:8080'; // iOS simulator / web
 
-  // Full endpoint path
   static const String _vendorsEndpoint = '/api/calendar/connections/vendors';
+  static const String _connectionsEndpoint = '/api/calendar/sync/google/calendars';
+  static const String _toggleEndpoint = '/api/calendar/sync/calendars';
+  static const String _eventsEndpoint = '/api/calendar/google/events';
 
 
   // HTTP client instance.
@@ -138,11 +143,142 @@ class CalendarService {
       return apiResponse.data;
 
     } on Exception {
-      // Re-throw our own exceptions (timeout, HTTP error, API error)
       rethrow;
     } catch (e) {
-      // Catch any unexpected errors (JSON parsing failure, type cast errors)
       throw Exception('Unexpected error: ${e.toString()}');
     }
+  }
+
+  /// GET /api/calendar/connections
+  /// Returns the list of sub-calendars for the connected Google account.
+  Future<List<SubCalendarModel>> fetchConnections() async {
+    debugPrint('🔵 [CalendarService] fetchConnections() — GET $_baseUrl$_connectionsEndpoint');
+    final uri = Uri.parse('$_baseUrl$_connectionsEndpoint');
+
+    try {
+      final response = await _client
+          .get(uri, headers: {'Accept': 'application/json'})
+          .timeout(const Duration(seconds: 10));
+
+      debugPrint('🔵 [CalendarService] status: ${response.statusCode}');
+      debugPrint('🔵 [CalendarService] raw body: ${response.body}');
+
+      if (response.statusCode != 200) {
+        throw Exception('Server returned ${response.statusCode}.');
+      }
+
+      final decoded = jsonDecode(response.body);
+      debugPrint('🔵 [CalendarService] decoded type: ${decoded.runtimeType}');
+
+      List<dynamic> items;
+      if (decoded is List) {
+        debugPrint('🔵 [CalendarService] response is raw array, length=${decoded.length}');
+        items = decoded;
+      } else if (decoded is Map<String, dynamic>) {
+        if (decoded['success'] == false) {
+          throw Exception(decoded['message'] ?? 'API returned success=false');
+        }
+        final data = decoded['data'];
+        debugPrint('🔵 [CalendarService] data field type: ${data.runtimeType}');
+        if (data is List) {
+          items = data;
+        } else {
+          throw Exception('Unexpected data shape: ${data.runtimeType}');
+        }
+      } else {
+        throw Exception('Unknown response shape: ${decoded.runtimeType}');
+      }
+
+      debugPrint('🔵 [CalendarService] parsing ${items.length} item(s)');
+      final result = <SubCalendarModel>[];
+      for (final item in items) {
+        debugPrint('🔵 [CalendarService] item fields: ${(item as Map<String, dynamic>).keys.toList()}');
+        try {
+          final model = SubCalendarModel.fromJson(item);
+          debugPrint('✅ [CalendarService] parsed id=${model.id} label="${model.label}" isSyncOn=${model.isSyncOn}');
+          result.add(model);
+        } catch (e) {
+          debugPrint('🔴 [CalendarService] parse failed for item $item — $e');
+        }
+      }
+      debugPrint('🔵 [CalendarService] returning ${result.length} sub-calendar(s)');
+      return result;
+    } on Exception {
+      rethrow;
+    } catch (e) {
+      throw Exception('Unexpected error: $e');
+    }
+  }
+
+  /// POST /api/calendar/sync/calendars/{id}/toggle
+  /// Body: { "syncOn": true/false }
+  /// Throws on failure.
+  Future<void> toggleCalendarSync(int id, {required bool syncOn}) async {
+    final uri = Uri.parse('$_baseUrl$_toggleEndpoint/$id/toggle');
+    debugPrint('🔵 [CalendarService] toggleCalendarSync($id, syncOn=$syncOn) — POST $uri');
+
+    final response = await _client
+        .put(
+          uri,
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: jsonEncode({'syncOn': syncOn}),
+        )
+        .timeout(const Duration(seconds: 10));
+
+    debugPrint('🔵 [CalendarService] toggle status: ${response.statusCode} body: ${response.body}');
+
+    if (response.statusCode != 200) {
+      throw Exception('Toggle failed: server returned ${response.statusCode}.');
+    }
+  }
+
+  /// GET /api/calendar/google/events?calendarId={calendarId}
+  /// Returns all events for the given calendar.
+  Future<List<CalendarEventModel>> fetchCalendarEvents(String calendarId) async {
+    final uri = Uri.parse('$_baseUrl$_eventsEndpoint').replace(
+      queryParameters: {'calendarId': calendarId},
+    );
+    debugPrint('🔵 [CalendarService] fetchCalendarEvents — GET $uri');
+
+    final response = await _client
+        .get(uri, headers: {'Accept': 'application/json'})
+        .timeout(const Duration(seconds: 15));
+
+    debugPrint('🔵 [CalendarService] events status: ${response.statusCode}');
+    debugPrint('🔵 [CalendarService] events body: ${response.body}');
+
+    if (response.statusCode != 200) {
+      throw Exception('Events fetch failed: server returned ${response.statusCode}.');
+    }
+
+    final decoded = jsonDecode(response.body);
+    List<dynamic> items;
+
+    if (decoded is List) {
+      items = decoded;
+    } else if (decoded is Map<String, dynamic>) {
+      if (decoded['success'] == false) {
+        throw Exception(decoded['message'] ?? 'API returned success=false');
+      }
+      final data = decoded['data'];
+      if (data is Map<String, dynamic> && data['events'] is List) {
+        items = data['events'] as List;
+      } else if (data is List) {
+        items = data;
+      } else {
+        throw Exception('Unexpected events data shape: ${data.runtimeType}');
+      }
+    } else {
+      throw Exception('Unknown events response shape');
+    }
+
+    debugPrint('🔵 [CalendarService] parsing ${items.length} event(s)');
+    return items
+        .whereType<Map<String, dynamic>>()
+        .map(CalendarEventModel.fromJson)
+        .toList();
   }
 }

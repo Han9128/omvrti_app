@@ -50,7 +50,8 @@ class CalendarResult {
 
 class CalendarSuccess extends CalendarResult {
   final TripModel trip;
-  const CalendarSuccess({required this.trip}) : super._();
+  final String? connectedEmail;
+  const CalendarSuccess({required this.trip, this.connectedEmail}) : super._();
 }
 
 class CalendarFailure extends CalendarResult {
@@ -149,6 +150,7 @@ class CalendarService {
           if (body['success'] == true && data is Map<String, dynamic> && data.isNotEmpty && data['success'] != false) {
             return CalendarSuccess(
               trip: TripModel.fromJson(data),
+              connectedEmail: account.email,
             );
           }
         }
@@ -159,6 +161,7 @@ class CalendarService {
       // ── Fallback: no events from backend → use mock trip ────────────────
       debugPrint('ℹ️ No calendar events found — loading mock trip data.');
       return CalendarSuccess(
+        connectedEmail: account.email,
         trip: TripModel(
           purpose: 'Business Meeting',
           company: 'OmVrti Test',

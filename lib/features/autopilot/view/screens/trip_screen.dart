@@ -326,8 +326,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:omvrti_app/core/constants/constants.dart';
 import 'package:omvrti_app/core/widgets/omvrti_app_bar.dart';
+import 'package:omvrti_app/features/calendar/viewmodel/calendar_viewmodel.dart';
 
 // Changed from ConsumerWidget → ConsumerStatefulWidget because we need
 // local state to track the selected year in the dropdown.
@@ -468,6 +470,7 @@ class _TripScreenState extends ConsumerState<TripScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final eventsAsync = ref.watch(calendarEventsProvider);
     return ColoredBox(
       color: AppColors.pageBackground,
       child: SafeArea(
@@ -479,7 +482,7 @@ class _TripScreenState extends ConsumerState<TripScreen> {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(AppSpacing.lg),
-                child: _buildTripPlanningCard(context),
+                child: _buildTripPlanningCard(context, eventsAsync),
               ),
             ),
           ],
@@ -488,7 +491,11 @@ class _TripScreenState extends ConsumerState<TripScreen> {
     );
   }
 
-  Widget _buildTripPlanningCard(BuildContext context) {
+  Widget _buildTripPlanningCard(BuildContext context, AsyncValue<Object?> eventsAsync) {
+    final autopilotTotal = eventsAsync.maybeWhen(
+      data: (events) => (events as List?)?.length ?? 0,
+      orElse: () => 0,
+    );
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -564,13 +571,25 @@ class _TripScreenState extends ConsumerState<TripScreen> {
                   ),
                 ),
 
-                // Total trips count
-                Text(
-                  'Total Trips: 42',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
+                // Total trips count — dynamic from calendar events API
+                if (eventsAsync.isLoading)
+                  const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.primary,
+                    ),
+                  )
+                else
+                  Text(
+                    eventsAsync.hasError
+                        ? 'Total Trips: —'
+                        : 'Total Trips: $autopilotTotal',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-                ),
                 const SizedBox(height: AppSpacing.md),
 
                 const Divider(
@@ -588,12 +607,12 @@ class _TripScreenState extends ConsumerState<TripScreen> {
                   color: Color(0xFFEEEEEE),
                 ),
 
-                // Trip type rows — unchanged
                 _buildTripRow(
                   name: 'Autopilot Trips',
                   subtitle: 'Almost certain trips',
-                  total: 20,
-                  accepted: 5,
+                  total: autopilotTotal,
+                  accepted: 0,
+                  onTap: () => context.go('/trips/autopilot'),
                 ),
                 const Divider(
                   height: 1,
@@ -604,9 +623,9 @@ class _TripScreenState extends ConsumerState<TripScreen> {
                 ),
                 _buildTripRow(
                   name: 'Copilot Trips',
-                  subtitle: 'very likely trips',
-                  total: 15,
-                  accepted: 2,
+                  subtitle: 'Very likely trips',
+                  total: 0,
+                  accepted: 0,
                 ),
                 const Divider(
                   height: 1,
@@ -618,7 +637,7 @@ class _TripScreenState extends ConsumerState<TripScreen> {
                 _buildTripRow(
                   name: 'Discover Trips',
                   subtitle: 'Adhoc trips',
-                  total: 7,
+                  total: 0,
                   accepted: 0,
                 ),
                 const SizedBox(height: AppSpacing.sm),
@@ -709,19 +728,21 @@ class _TripScreenState extends ConsumerState<TripScreen> {
     );
   }
 
-  // Unchanged from original
   Widget _buildTripRow({
     required String name,
     required String subtitle,
     required int total,
     required int accepted,
+    VoidCallback? onTap,
   }) {
     const Color totalColor = Color(0xFF4A90D9);
     const Color totalBg = Color(0xFFD6E8F9);
     const Color acceptedColor = Color(0xFF27AE60);
     const Color acceptedBg = Color(0xFFD4F4E2);
 
-    return Padding(
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
         vertical: AppSpacing.md,
@@ -772,10 +793,9 @@ class _TripScreenState extends ConsumerState<TripScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 
-  // Unchanged from original
   Widget _buildBadge(String text, Color textColor, Color bgColor) {
     return Container(
       width: 38,
