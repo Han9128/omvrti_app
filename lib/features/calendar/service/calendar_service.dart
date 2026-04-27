@@ -52,10 +52,10 @@ class CalendarService {
   static const String _baseUrl = 'http://192.168.64.153:8080'; // Android emulator
   // static const String _baseUrl = 'http://localhost:8080'; // iOS simulator / web
 
-  static const String _vendorsEndpoint = '/api/calendar/connections/vendors';
-  static const String _connectionsEndpoint = '/api/calendar/sync/google/calendars';
-  static const String _toggleEndpoint = '/api/calendar/sync/calendars';
-  static const String _eventsEndpoint = '/api/calendar/google/events';
+  static const String _vendorsEndpoint = '/api/v1/calendar/vendors';
+  static const String _connectionsEndpoint = '/api/v1/calendar/providers';
+  static const String _toggleEndpoint = '/api/v1/calendar/sync/calendars';
+  static const String _eventsEndpoint = '/api/v1/trips/smart';
 
 
   // HTTP client instance.
@@ -149,11 +149,12 @@ class CalendarService {
     }
   }
 
-  /// GET /api/calendar/connections
+  /// GET /api/v1/calendar/providers/{provider}/calendars/sync
   /// Returns the list of sub-calendars for the connected Google account.
-  Future<List<SubCalendarModel>> fetchConnections() async {
-    debugPrint('🔵 [CalendarService] fetchConnections() — GET $_baseUrl$_connectionsEndpoint');
-    final uri = Uri.parse('$_baseUrl$_connectionsEndpoint');
+  Future<List<SubCalendarModel>> fetchConnections({String provider = 'google'}) async {
+    final url = '$_baseUrl$_connectionsEndpoint/$provider/calendars/sync';
+    debugPrint('🔵 [CalendarService] fetchConnections() — GET $url');
+    final uri = Uri.parse(url);
 
     try {
       final response = await _client
@@ -235,12 +236,10 @@ class CalendarService {
     }
   }
 
-  /// GET /api/calendar/google/events?calendarId={calendarId}
-  /// Returns all events for the given calendar.
-  Future<List<CalendarEventModel>> fetchCalendarEvents(String calendarId) async {
-    final uri = Uri.parse('$_baseUrl$_eventsEndpoint').replace(
-      queryParameters: {'calendarId': calendarId},
-    );
+  /// GET /api/v1/trips/smart
+  /// Returns the smart trip list derived from calendar events.
+  Future<List<CalendarEventModel>> fetchCalendarEvents() async {
+    final uri = Uri.parse('$_baseUrl$_eventsEndpoint');
     debugPrint('🔵 [CalendarService] fetchCalendarEvents — GET $uri');
 
     final response = await _client
@@ -254,29 +253,19 @@ class CalendarService {
       throw Exception('Events fetch failed: server returned ${response.statusCode}.');
     }
 
-    final decoded = jsonDecode(response.body);
-    List<dynamic> items;
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
 
-    if (decoded is List) {
-      items = decoded;
-    } else if (decoded is Map<String, dynamic>) {
-      if (decoded['success'] == false) {
-        throw Exception(decoded['message'] ?? 'API returned success=false');
-      }
-      final data = decoded['data'];
-      if (data is Map<String, dynamic> && data['events'] is List) {
-        items = data['events'] as List;
-      } else if (data is List) {
-        items = data;
-      } else {
-        throw Exception('Unexpected events data shape: ${data.runtimeType}');
-      }
-    } else {
-      throw Exception('Unknown events response shape');
+    if (decoded['success'] == false) {
+      throw Exception(decoded['message'] ?? 'API returned success=false');
     }
 
-    debugPrint('🔵 [CalendarService] parsing ${items.length} event(s)');
-    return items
+    final data = decoded['data'];
+    if (data is! List) {
+      throw Exception('Unexpected events data shape: ${data.runtimeType}');
+    }
+
+    debugPrint('🔵 [CalendarService] parsing ${data.length} event(s)');
+    return data
         .whereType<Map<String, dynamic>>()
         .map(CalendarEventModel.fromJson)
         .toList();

@@ -146,12 +146,11 @@ class CalendarService {
 
         if (response.statusCode == 200) {
           final body = jsonDecode(response.body) as Map<String, dynamic>;
-          final data = body['data'];
-          if (body['success'] == true && data is Map<String, dynamic> && data.isNotEmpty && data['success'] != false) {
-            return CalendarSuccess(
-              trip: TripModel.fromJson(data),
-              connectedEmail: account.email,
-            );
+          if (body['success'] == true) {
+            // Exchange succeeded — calendar is now connected.
+            // The exchange endpoint only confirms the connection; it does not
+            // return trip data, so fall through to the mock trip below.
+            debugPrint('✅ Calendar connected successfully (${body['code']})');
           }
         }
       } catch (e) {

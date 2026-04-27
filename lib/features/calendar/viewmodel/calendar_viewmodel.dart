@@ -176,11 +176,6 @@ final subCalendarListProvider =
 
 final calendarEventsProvider =
     FutureProvider<List<CalendarEventModel>>((ref) async {
-  final calendars = await ref.watch(subCalendarListProvider.future);
-  final primary = calendars.firstWhere(
-    (c) => c.isPrimary,
-    orElse: () => calendars.first,
-  );
-  debugPrint('🔵 [calendarEventsProvider] fetching events for ${primary.syncCalendarId}');
-  return ref.read(calendarServiceProvider).fetchCalendarEvents(primary.syncCalendarId);
+  debugPrint('🔵 [calendarEventsProvider] fetching smart trips');
+  return ref.read(calendarServiceProvider).fetchCalendarEvents();
 });

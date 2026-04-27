@@ -612,7 +612,7 @@ class _TripScreenState extends ConsumerState<TripScreen> {
                   subtitle: 'Almost certain trips',
                   total: autopilotTotal,
                   accepted: 0,
-                  onTap: () => context.go('/trips/autopilot'),
+                  onTap: () => context.push('/trips/autopilot'),
                 ),
                 const Divider(
                   height: 1,

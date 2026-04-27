@@ -21,7 +21,9 @@ import 'package:omvrti_app/features/autopilot/view/screens/rewards_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/setting_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/summary_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/autopilot_trips_screen.dart';
+import 'package:omvrti_app/features/autopilot/view/screens/trip_detail_screen.dart';
 import 'package:omvrti_app/features/autopilot/view/screens/trip_screen.dart';
+import 'package:omvrti_app/features/calendar/model/calendar_event_model.dart';
 import 'package:omvrti_app/features/auth/view/screens/login_screen.dart';
 import 'package:omvrti_app/features/calendar/view/screens/calendar_integration_screen.dart';
 import 'package:omvrti_app/features/calendar/view/screens/calendar_connected_screen.dart';
@@ -103,11 +105,11 @@ class AppRouter {
           ),
 
           GoRoute(
-  path: '/payment/confirmed',
-  builder: (context, state) => BookingConfirmedScreen(
-    paymentResult: state.extra as PaymentResult,
-  ),
-),
+            path: '/payment/confirmed',
+            builder: (context, state) => BookingConfirmedScreen(
+              paymentResult: state.extra as PaymentResult,
+            ),
+          ),
 
           GoRoute(
             path: '/calendar',
@@ -130,6 +132,11 @@ class AppRouter {
           GoRoute(
             path: '/trips/autopilot',
             builder: (context, state) => const AutopilotTripsScreen(),
+          ),
+          GoRoute(
+            path: '/trips/autopilot/detail',
+            builder: (context, state) =>
+                TripDetailScreen(trip: state.extra as CalendarEventModel),
           ),
           GoRoute(
             path: '/rewards',
