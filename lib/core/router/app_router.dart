@@ -28,6 +28,7 @@ import 'package:omvrti_app/features/auth/view/screens/login_screen.dart';
 import 'package:omvrti_app/features/calendar/view/screens/calendar_integration_screen.dart';
 import 'package:omvrti_app/features/calendar/view/screens/calendar_connected_screen.dart';
 import 'package:omvrti_app/features/calendar/view/screens/calendar_sync_settings_screen.dart';
+import 'package:omvrti_app/features/calendar/view/screens/calendar_view_screen.dart';
 import 'package:omvrti_app/features/home/view/home_screen.dart';
 import 'package:omvrti_app/features/payment/model/payment_result.dart';
 import 'package:omvrti_app/features/payment/view/screens/booking_confirmed_screen.dart';
@@ -122,6 +123,10 @@ class AppRouter {
           GoRoute(
             path: '/calendar/sync-settings',
             builder: (context, state) => const CalendarSyncSettingsScreen(),
+          ),
+          GoRoute(
+            path: '/calendar/view',
+            builder: (context, state) => const CalendarViewScreen(),
           ),
 
           GoRoute(

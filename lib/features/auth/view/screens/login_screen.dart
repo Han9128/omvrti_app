@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,24 +17,57 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _isPasswordHidden = true;
+
+  // ── Carousel ──────────────────────────────────────────────────────────────
+  late final PageController _pageController;
+  int _currentPage = 0;
+  Timer? _carouselTimer;
+
+  static const _slides = [
+    (image: 'assets/images/carousel/Slide1.jpg', text: 'Vertical Agentic AI\nfor Corporate Travel'),
+    (image: 'assets/images/carousel/Slide2.jpg', text: 'Predictable Travel\nBudgets'),
+    (image: 'assets/images/carousel/Slide3.jpg', text: 'Significant Cost Savings\nup to 40%'),
+    (image: 'assets/images/carousel/Slide4.jpg', text: 'Premium, Frictionless\nBooking Experience'),
+    (image: 'assets/images/carousel/Slide5.jpg', text: 'Higher Employee\nProductivity'),
+    (image: 'assets/images/carousel/Slide6.jpg', text: 'Minimized\nAdministrative Overhead'),
+    (image: 'assets/images/carousel/Slide7.jpg', text: 'Individually Optimized\nTravel Policies'),
+  ];
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _checkExistingSession());
+    _pageController = PageController();
+    _startCarouselTimer();
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _checkExistingSession());
+  }
+
+  void _startCarouselTimer() {
+    _carouselTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      if (!mounted) return;
+      final next = (_currentPage + 1) % _slides.length;
+      _pageController.animateToPage(
+        next,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOut,
+      );
+    });
   }
 
   @override
   void dispose() {
+    _carouselTimer?.cancel();
+    _pageController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  // Runs once on screen load — mirrors WhatsApp's startup auth check.
+  // ── Session / auth ────────────────────────────────────────────────────────
+
   Future<void> _checkExistingSession() async {
     if (!mounted) return;
     final service = ref.read(biometricServiceProvider);
@@ -43,20 +78,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!mounted) return;
 
     if (biometricEnabled) {
-      // Session exists + biometric enabled → auto-show scanner (no form needed)
-      final success = await service.authenticateUser(
-        reason: 'Sign in to OmVrti.ai',
-      );
+      final success =
+          await service.authenticateUser(reason: 'Sign in to OmVrti.ai');
       if (success && mounted) context.go('/home');
     } else {
-      // Session exists, no biometric → skip the form entirely
       context.go('/home');
     }
   }
 
-  // Only navigate when isAuthenticated flips false → true (fresh login).
-  // Guarding against previous state prevents clearError() from re-triggering
-  // navigation when the user was already authenticated.
   void _handleAuthStateChange(AuthState? previous, AuthState next) {
     if (next.isAuthenticated && !(previous?.isAuthenticated ?? false)) {
       _onLoginSuccess();
@@ -67,14 +96,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final service = ref.read(biometricServiceProvider);
     final supported = await service.isDeviceSupported();
     final alreadyEnabled = await service.isBiometricLoginEnabled();
-
-    // Show prompt if the device has biometric hardware and user hasn't opted in yet.
-    // We check hardware support (not enrollment) so the prompt shows even if
-    // the user hasn't enrolled fingerprints yet — they can do so after enabling.
     if (supported && !alreadyEnabled && mounted) {
       await _showEnableBiometricPrompt(service);
     }
-
     if (mounted) context.go('/home');
   }
 
@@ -94,7 +118,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 40, height: 4,
+              width: 40,
+              height: 4,
               decoration: BoxDecoration(
                 color: AppColors.textMuted.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
@@ -111,7 +136,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             const SizedBox(height: 8),
             Text(
               'Skip the password next time — sign in instantly using $label.',
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 28),
@@ -127,7 +153,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   backgroundColor: AppColors.accent,
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
                 ),
                 child: Text(
                   'Enable $label',
@@ -144,10 +171,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               onTap: () => Navigator.pop(ctx),
               child: Text(
                 'Not now',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppTextStyles.bodyMedium
+                    .copyWith(color: AppColors.textSecondary),
               ),
             ),
           ],
@@ -159,223 +184,258 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void _handleSignIn() {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
-
     ref.read(authProvider.notifier).clearError();
 
     if (email.isEmpty) {
-      ref.read(authProvider.notifier).state =
-          ref.read(authProvider).copyWith(errorMessage: 'Please enter your email address.');
+      ref.read(authProvider.notifier).state = ref
+          .read(authProvider)
+          .copyWith(errorMessage: 'Please enter your username.');
       return;
     }
-
     if (password.isEmpty) {
-      ref.read(authProvider.notifier).state =
-          ref.read(authProvider).copyWith(errorMessage: 'Please enter your password.');
+      ref.read(authProvider.notifier).state = ref
+          .read(authProvider)
+          .copyWith(errorMessage: 'Please enter your password.');
       return;
     }
-
     ref.read(authProvider.notifier).login(email: email, password: password);
   }
+
+  // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     ref.listen<AuthState>(authProvider, _handleAuthStateChange);
     final authState = ref.watch(authProvider);
 
+    final keyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+    final carouselHeight = keyboardVisible
+        ? 0.0
+        : MediaQuery.of(context).size.height * 0.55;
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
+      value: SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
+        statusBarIconBrightness:
+            keyboardVisible ? Brightness.dark : Brightness.light,
+        statusBarBrightness:
+            keyboardVisible ? Brightness.light : Brightness.dark,
       ),
       child: Scaffold(
-        backgroundColor: AppColors.pageBackground,
-        resizeToAvoidBottomInset: true,
-        body: SafeArea(
-          top: false,
-          child: SingleChildScrollView(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        backgroundColor: Colors.white,
+        resizeToAvoidBottomInset: false,
+        body: Column(
+          children: [
+            // ── Carousel — collapses when keyboard opens ───────────────────
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 350),
+              curve: Curves.easeInOut,
+              height: carouselHeight,
+              clipBehavior: Clip.hardEdge,
+              decoration: const BoxDecoration(),
+              child: _buildCarousel(context),
             ),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height,
-              ),
-              child: IntrinsicHeight(
-                child: Column(
+
+            // ── Scrollable form — centered in remaining space ──────────────
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  left: 24,
+                  right: 24,
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                ),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.height -
+                        MediaQuery.of(context).viewInsets.bottom -
+                        carouselHeight,
+                  ),
+                  child: IntrinsicHeight(
+                    child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 80),
-
-                    // Logo above the card
-                    _buildLogo(),
-
-                    const SizedBox(height: 100),
-
-                    // Login card
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.08),
-                              blurRadius: 24,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Title
-                            Center(
-                              child: Text(
-                                'Welcome to OmVrti.ai\nlogin now!',
-                                textAlign: TextAlign.center,
-                                style: AppTextStyles.h3.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.textPrimary,
-                                  height: 1.3,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-
-                            // Subtitle
-                            // Center(
-                            //   child: Text(
-                            //     'Enter your Email and Password',
-                            //     textAlign: TextAlign.center,
-                            //     style: AppTextStyles.bodyMedium.copyWith(
-                            //       color: AppColors.textSecondary,
-                            //     ),
-                            //   ),
-                            // ),
-                            const SizedBox(height: 28),
-
-                            // Error banner
-                            _buildErrorBanner(authState.errorMessage),
-
-                            // Company Email Id
-                            _buildFieldLabel('Company Email Id'),
-                            const SizedBox(height: 6),
-                            _buildEmailField(),
-                            const SizedBox(height: 20),
-
-                            // Password
-                            _buildFieldLabel('Password'),
-                            const SizedBox(height: 6),
-                            _buildPasswordField(),
-                            const SizedBox(height: 12),
-
-                            // Forgot Password — right aligned
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: GestureDetector(
-                                onTap: () {
-                                  // TODO: context.push('/forgot-password')
-                                },
-                                child: Text(
-                                  'Forgot Password?',
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 28),
-
-                            // Login button
-                            SizedBox(
-                              width: double.infinity,
-                              height: 52,
-                              child: ElevatedButton(
-                                onPressed: authState.isLoading ? null : _handleSignIn,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.accent,
-                                  disabledBackgroundColor:
-                                      AppColors.accent.withValues(alpha: 0.6),
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                ),
-                                child: authState.isLoading
-                                    ? const SizedBox(
-                                        width: 22,
-                                        height: 22,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2.5,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : Text(
-                                        'Login',
-                                        style: AppTextStyles.bodyMedium.copyWith(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                              ),
-                            ),
-
-                          ],
+                    // Logo + tagline
+                    Center(
+                      child: Image.asset('assets/images/omvrti_logo.png',
+                          height: 36),
+                    ),
+                    const SizedBox(height: 6),
+                    Center(
+                      child: Text(
+                        'Predictive. Personalized. Premium',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.accent,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
+                    const SizedBox(height: 28),
 
-                    const Spacer(),
-                    const SizedBox(height: 24),
+                    // Error banner
+                    _buildErrorBanner(authState.errorMessage),
+
+                    // Username
+                    _buildFieldLabel('Username'),
+                    const SizedBox(height: 6),
+                    _buildEmailField(),
+                    const SizedBox(height: 20),
+
+                    // Password
+                    _buildFieldLabel('Password'),
+                    const SizedBox(height: 6),
+                    _buildPasswordField(),
+                    const SizedBox(height: 10),
+
+                    // Forgot password
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: GestureDetector(
+                        onTap: () {},
+                        child: Text(
+                          'Forgot Password?',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+
+                    // Login button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed:
+                            authState.isLoading ? null : _handleSignIn,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.accent,
+                          disabledBackgroundColor:
+                              AppColors.accent.withValues(alpha: 0.6),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: authState.isLoading
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(
+                                'Login',
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 16,
+                                ),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                   ],
+                ),
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildLogo() {
-    return Center(
-      // child: RichText(
-      //   text: TextSpan(
-      //     children: [
-      //       TextSpan(
-      //         text: 'Om',
-      //         style: AppTextStyles.h1.copyWith(
-      //           color: const Color(0xFF1A3C8F),
-      //           fontWeight: FontWeight.w800,
-      //         ),
-      //       ),
-      //       TextSpan(
-      //         text: 'V',
-      //         style: AppTextStyles.h1.copyWith(
-      //           color: AppColors.accent,
-      //           fontWeight: FontWeight.w800,
-      //         ),
-      //       ),
-      //       TextSpan(
-      //         text: 'rti.ai',
-      //         style: AppTextStyles.h1.copyWith(
-      //           color: const Color(0xFF1A3C8F),
-      //           fontWeight: FontWeight.w800,
-      //         ),
-      //       ),
-      //     ],
-      //   ),
-      // ),
+  // ── Carousel widget ───────────────────────────────────────────────────────
 
-      child:Image.asset('assets/images/omvrti_logo.png', height: 40),
-    );
+  Widget _buildCarousel(BuildContext context) {
+    return Stack(
+        fit: StackFit.expand,
+        children: [
+          // Slides
+          PageView.builder(
+            controller: _pageController,
+            itemCount: _slides.length,
+            onPageChanged: (i) => setState(() => _currentPage = i),
+            itemBuilder: (_, i) => Image.asset(
+              _slides[i].image,
+              fit: BoxFit.cover,
+            ),
+          ),
+
+          // Gradient overlay — dark at top & bottom for text + dots
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xBB000000),
+                  Color(0x00000000),
+                  Color(0x99000000),
+                ],
+                stops: [0.0, 0.45, 1.0],
+              ),
+            ),
+          ),
+
+          // Per-slide text overlay
+          SafeArea(
+            bottom: false,
+            child: Align(
+              alignment: const Alignment(0.0, -0.8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Text(
+                  _slides[_currentPage].text,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    height: 1.35,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Dot indicators
+          Positioned(
+            bottom: 14,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(_slides.length, (i) {
+                final active = i == _currentPage;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: active ? 18 : 7,
+                  height: 7,
+                  decoration: BoxDecoration(
+                    color: active
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.45),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ],
+      );
   }
+
+  // ── Form helpers ──────────────────────────────────────────────────────────
 
   Widget _buildFieldLabel(String label) {
     return Text(
@@ -394,7 +454,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       style: AppTextStyles.bodyMedium,
       onChanged: (_) => ref.read(authProvider.notifier).clearError(),
       decoration: _fieldDecoration(
-        hint: 'Enter your company email',
+        hint: 'sam.watson',
         prefixIcon: Icons.mail_outline,
       ),
     );
@@ -407,10 +467,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       style: AppTextStyles.bodyMedium,
       onChanged: (_) => ref.read(authProvider.notifier).clearError(),
       decoration: _fieldDecoration(
-        hint: 'Enter your password',
+        hint: 'Enter your Password',
         prefixIcon: Icons.lock_outline,
         suffixIcon: GestureDetector(
-          onTap: () => setState(() => _isPasswordHidden = !_isPasswordHidden),
+          onTap: () =>
+              setState(() => _isPasswordHidden = !_isPasswordHidden),
           child: Icon(
             _isPasswordHidden
                 ? Icons.visibility_outlined
@@ -430,10 +491,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMuted),
+      hintStyle:
+          AppTextStyles.bodyMedium.copyWith(color: AppColors.textMuted),
       prefixIcon: Icon(prefixIcon, color: AppColors.textMuted, size: 20),
       suffixIcon: suffixIcon,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       filled: true,
       fillColor: AppColors.pageBackground,
       enabledBorder: OutlineInputBorder(
@@ -452,7 +515,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Widget _buildErrorBanner(String? errorMessage) {
     if (errorMessage == null) return const SizedBox.shrink();
-
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 16),

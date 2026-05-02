@@ -19,6 +19,7 @@ class AppIcons {
   static const dollar = 'assets/icons/dollar.svg';
   static const String profileIcon = 'assets/icons/profile_icon.svg';
   static const IconData forward = Icons.chevron_right;
+
   // ── AutoPilot flight page─────────────────────────────────────────────
   static const String flight_takeoff = 'assets/icons/airplane_takeoff.svg';
   static const String flight_landing = 'assets/icons/airplane_landing.svg';
@@ -36,6 +37,7 @@ class AppIcons {
   static const String breakfast = 'assets/icons/breakfast.svg';
   static const String star = 'assets/icons/star.svg';
   static const String walk = 'assets/icons/walk.svg';
+  
   // ── AutoPilot car page ─────────────────────────────────────────────
   static const String transmission = 'assets/icons/transmission.svg';
   static const String seats = 'assets/icons/car_seat.svg';

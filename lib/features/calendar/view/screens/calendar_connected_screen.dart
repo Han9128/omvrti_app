@@ -233,7 +233,7 @@ class CalendarConnectedScreen extends ConsumerWidget {
             width: double.infinity,
             height: 48,
             child: OutlinedButton(
-              onPressed: () => context.go('/home'),
+              onPressed: () => context.push('/calendar/view'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.accent,
                 side: const BorderSide(color: AppColors.accent),

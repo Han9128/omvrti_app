@@ -46,6 +46,9 @@ class CalendarVendor {
   /// Authentication type — "1" = OAuth, could expand to other types
   final String authType;
 
+  /// Whether this vendor is already connected to the user's account
+  final bool isConnected;
+
   const CalendarVendor({
     required this.id,
     required this.name,
@@ -53,6 +56,7 @@ class CalendarVendor {
     required this.vendorType,
     required this.isNewConnection,
     required this.authType,
+    this.isConnected = false,
   });
 
   // ── fromJson factory constructor ────────────────────────────────────────────
@@ -74,6 +78,7 @@ class CalendarVendor {
       // JSON booleans come through as bool in Dart's json.decode
       isNewConnection: json['isNewConnection'] as bool? ?? false,
       authType: json['authType'] as String? ?? '',
+      isConnected: json['isConnected'] as bool? ?? false,
     );
   }
 

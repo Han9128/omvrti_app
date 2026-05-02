@@ -10,13 +10,13 @@ class AppTextStyles {
     fontFamily: AppFontFamilies.heading,
     // fallback families if given fontFamily is not present
     fontFamilyFallback: [
-      AppFontFamilies.body,
+      AppFontFamilies.heading,
       'Roboto',
       'San Francisco',
       'Arial',
     ],
     fontSize: 28,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w800,
     color: AppColors.textPrimary,
     height: 1.2,
   );
@@ -30,7 +30,7 @@ class AppTextStyles {
       'Arial',
     ],
     fontSize: 22,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w800,
     color: AppColors.textPrimary,
     height: 1.25,
   );
@@ -44,7 +44,7 @@ class AppTextStyles {
       'Arial',
     ],
     fontSize: 18,
-    fontWeight: FontWeight.w600, // SemiBold
+    fontWeight: FontWeight.w800, // SemiBold
     color: AppColors.textPrimary,
     height: 1.3,
   );
@@ -62,7 +62,7 @@ class AppTextStyles {
     color: AppColors.textPrimary,
   );
 
-  // ── Body Styles — DM Sans ─────────────────────────────────
+  // ── Body Styles — poppins ─────────────────────────────────
   // Used for: paragraphs, descriptions, card content, labels
 
   static const TextStyle bodyLarge = TextStyle(

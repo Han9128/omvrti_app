@@ -82,6 +82,7 @@ flutter:
   - assets/images/
   - assets/icons/
   - assets/images/calendar/
+  - assets/images/carousel/
 
   fonts:
     - family: Poppins

@@ -225,14 +225,14 @@ class CalendarService {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
           },
-          body: jsonEncode({'syncOn': syncOn}),
+          body: jsonEncode({'isSyncOn': syncOn}),
         )
         .timeout(const Duration(seconds: 10));
 
     debugPrint('🔵 [CalendarService] toggle status: ${response.statusCode} body: ${response.body}');
 
     if (response.statusCode != 200) {
-      throw Exception('Toggle failed: server returned ${response.statusCode}.');
+      throw Exception('Toggle failed: server returned ${response.statusCode}. Body: ${response.body}');
     }
   }
 

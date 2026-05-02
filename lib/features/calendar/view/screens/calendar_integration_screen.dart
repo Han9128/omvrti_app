@@ -216,7 +216,7 @@ class _CalendarIntegrationScreenState
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: AppColors.error.withOpacity(0.1),
+                color: AppColors.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -364,7 +364,7 @@ class _CalendarIntegrationScreenState
         borderRadius: BorderRadius.circular(AppSpacing.xl),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -378,36 +378,18 @@ class _CalendarIntegrationScreenState
             // ── Header: "Select Your Calendar" ───────────────────────────
             _buildCardHeader(),
 
-            // Divider between header and list
-            const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
-
             // ── Dynamic vendor rows ───────────────────────────────────────
             // ListView.builder creates rows on demand — efficient for
             // any number of vendors without hardcoding anything.
-            ListView.separated(
-              // shrinkWrap: tells ListView to size itself to its content
-              // (not expand to fill remaining screen height).
-              // Required when ListView is inside a Column/SingleChildScrollView.
+            ListView.builder(
               shrinkWrap: true,
-
-              // NeverScrollableScrollPhysics: disables ListView's own scroll.
-              // The outer SingleChildScrollView handles all scrolling.
-              // Without this, Flutter throws a "unbounded height" error.
               physics: const NeverScrollableScrollPhysics(),
-
               itemCount: vendors.length,
-              separatorBuilder: (context, index) => const Divider(
-                height: 1,
-                thickness: 1,
-                indent: AppSpacing.lg,
-                endIndent: AppSpacing.lg,
-                color: Color(0xFFEEEEEE),
-              ),
               itemBuilder: (context, index) {
-                final vendor = vendors[index];
-                return _buildVendorRow(context, vendor);
+                return _buildVendorRow(context, vendors[index]);
               },
             ),
+            const SizedBox(height: AppSpacing.sm),
           ],
         ),
       ),
@@ -424,24 +406,14 @@ class _CalendarIntegrationScreenState
         AppSpacing.lg,
         AppSpacing.md,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Select Your Calendar',
-            style: AppTextStyles.h4.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w700,
-            ),
+      child: Center(
+        child: Text(
+          'Select Your Calendar',
+          style: AppTextStyles.h4.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w700,
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Choose a calendar to connect',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -470,47 +442,104 @@ class _CalendarIntegrationScreenState
     final isGoogle = vendor.name.toLowerCase() == 'google';
     final isThisRowLoading = isGoogle && isConnecting;
     final isDisabled = isConnecting && !isGoogle;
+    final isConnected = isGoogle
+        ? (connectionState.isSuccess || vendor.isConnected)
+        : vendor.isConnected;
 
-    return InkWell(
-      onTap: isConnecting
-          ? null
-          : () {
-              if (isGoogle) {
-                ref
-                    .read(googleCalendarConnectionProvider.notifier)
-                    .connect();
-              } else {
-                _showVendorSelectedSnackBar(context, vendor.displayName);
-              }
-            },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.md,
-        ),
-        child: Opacity(
-          opacity: isDisabled ? 0.4 : 1.0,
-          child: Row(
+    void onTap() {
+      if (isConnecting) return;
+      if (isGoogle) {
+        ref.read(googleCalendarConnectionProvider.notifier).connect();
+      } else {
+        _showVendorSelectedSnackBar(context, vendor.displayName);
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.sm,
+      ),
+      child: InkWell(
+        onTap: isConnecting ? null : onTap,
+        borderRadius: BorderRadius.circular(AppSpacing.md),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.pageBackground, width: 1),
+            borderRadius: BorderRadius.circular(AppSpacing.md),
+          ),
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Opacity(
+            opacity: isDisabled ? 0.4 : 1.0,
+            child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              _buildVendorIcon(vendor),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(child: _buildVendorName(vendor.displayName)),
-              if (isThisRowLoading)
-                const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppColors.primary,
-                  ),
-                )
-              else
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  color: AppColors.textMuted,
-                  size: 22,
-                ),
+              // Top row: icon (left) + badge (right)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildVendorIcon(vendor),
+                  const Spacer(),
+                  if (isThisRowLoading)
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.primary,
+                      ),
+                    )
+                  else if (isConnected)
+                    _buildConnectedBadge()
+                  else
+                    _buildConnectButton(onTap),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              // Vendor name below the icon
+              _buildVendorName(vendor.displayName),
             ],
+          ),
+        ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConnectedBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppColors.success,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        'Connected',
+        style: AppTextStyles.bodySmall.copyWith(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+          fontSize: 12,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConnectButton(VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          'Connect',
+          style: AppTextStyles.bodySmall.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
           ),
         ),
       ),
@@ -520,41 +549,30 @@ class _CalendarIntegrationScreenState
   // ── Vendor icon with graceful fallback ─────────────────────────────────────
 
   Widget _buildVendorIcon(CalendarVendor vendor) {
-    return SizedBox(
-      width: 32,
-      height: 32,
-      child: Image.asset(
-        // Uses the computed getter from CalendarVendor:
-        // e.g. assets/images/calendar/google_calendar.png
-        vendor.iconAssetPath,
-        width: 38,
-        height: 38,
-        fit: BoxFit.contain,
-
-        // FALLBACK: if the PNG asset is missing (during development),
-        // show a colored circle with the first letter of the vendor name.
-        // This prevents crashes and still looks reasonable.
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              // Generate a color from the vendor name for visual variety
-              color: _vendorColor(vendor.name).withOpacity(0.15),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Center(
-              child: Text(
-                vendor.name[0].toUpperCase(), // First letter as placeholder
-                style: AppTextStyles.h4.copyWith(
-                  color: _vendorColor(vendor.name),
-                  fontWeight: FontWeight.w700,
-                ),
+    return Image.asset(
+      vendor.iconAssetPath,
+      width: 40,
+      height: 40,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: _vendorColor(vendor.name).withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Center(
+            child: Text(
+              vendor.name[0].toUpperCase(),
+              style: AppTextStyles.h4.copyWith(
+                color: _vendorColor(vendor.name),
+                fontWeight: FontWeight.w700,
               ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 

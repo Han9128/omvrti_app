@@ -141,7 +141,7 @@ class ProfileDrawer extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
               child: Container(
                 height: 1,
-                color: AppColors.textMuted.withOpacity(0.15),
+                color: AppColors.textMuted.withValues(alpha:0.15),
               ),
             ),
 
@@ -168,7 +168,7 @@ class ProfileDrawer extends ConsumerWidget {
                     // Divider before logout
                     Container(
                       height: 1,
-                      color: AppColors.textMuted.withOpacity(0.15),
+                      color: AppColors.textMuted.withValues(alpha:0.15),
                     ),
 
                     const SizedBox(height: AppSpacing.lg),
@@ -281,11 +281,11 @@ class ProfileDrawer extends ConsumerWidget {
               : null),
       borderRadius: BorderRadius.circular(AppSpacing.sm),
       splashColor: item.isLogout
-          ? AppColors.error.withOpacity(0.06)
-          : AppColors.primary.withOpacity(0.06),
+          ? AppColors.error.withValues(alpha:0.06)
+          : AppColors.primary.withValues(alpha:0.06),
       highlightColor: item.isLogout
-          ? AppColors.error.withOpacity(0.04)
-          : AppColors.primary.withOpacity(0.04),
+          ? AppColors.error.withValues(alpha:0.04)
+          : AppColors.primary.withValues(alpha:0.04),
       child: Padding(
         padding: const EdgeInsets.symmetric(
           vertical: AppSpacing.md,

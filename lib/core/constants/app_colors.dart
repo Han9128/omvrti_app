@@ -14,7 +14,6 @@ class AppColors {
   static const Color red_stroke = Color(0xFF952703);
 
   // text colors
-
   static const Color textPrimary = Color(0xFF333333); // black - primary text
   static const Color textSecondary = Color(0xFF919191);
   static const Color textMuted = Color(0xFF9BA3BF);
