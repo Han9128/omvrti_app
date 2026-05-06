@@ -32,6 +32,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:omvrti_app/core/constants/constants.dart';
+import 'package:omvrti_app/core/router/app_router.dart';
 import 'package:omvrti_app/features/auth/viewmodel/auth_viewmodel.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -332,18 +333,18 @@ class ProfileDrawer extends ConsumerWidget {
 
   // ── Logout Handler ────────────────────────────────────────────────────────
   void _handleLogout(BuildContext context, WidgetRef ref) {
+    // Capture root navigator BEFORE closing the drawer.
+    // After the drawer closes, the drawer's own context becomes unmounted,
+    // but the root navigator (from MaterialApp) is always alive.
+    final rootNavigator = Navigator.of(context, rootNavigator: true);
+
+    // Close the drawer first
     Navigator.pop(context);
 
-    Future.delayed(const Duration(milliseconds: 200), () {
-      if (context.mounted) {
-        _showLogoutDialog(context, ref);
-      }
-    });
-  }
-
-  void _showLogoutDialog(BuildContext outerContext, WidgetRef ref) {
-    showDialog(
-      context: outerContext,
+    // Wait for drawer close animation, then show dialog via root navigator
+    Future.delayed(const Duration(milliseconds: 300), () {
+      showDialog(
+        context: rootNavigator.context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
@@ -371,10 +372,10 @@ class ProfileDrawer extends ConsumerWidget {
               ),
             ),
             ElevatedButton(
-              onPressed: () async {
+              onPressed: () {
                 Navigator.pop(dialogContext);
-                await ref.read(authProvider.notifier).logout();
-                if (outerContext.mounted) outerContext.go('/login');
+                AppRouter.router.go('/login');
+                ref.read(authProvider.notifier).logout();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.error,
@@ -394,5 +395,6 @@ class ProfileDrawer extends ConsumerWidget {
         );
       },
     );
+    });
   }
 }
